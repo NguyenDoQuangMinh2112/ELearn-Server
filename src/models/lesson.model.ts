@@ -119,6 +119,7 @@ const pushNoteLessonIds = async (noteLesson: any) => {
     throw new Error(error)
   }
 }
+
 export const lessonModel = {
   LESSON_COLLECTION_NAME,
   LESSON_COLLECTION_SCHEMA,
@@ -126,5 +127,6 @@ export const lessonModel = {
   findOneById,
   getDetails,
   update,
-  pushNoteLessonIds
+  pushNoteLessonIds ,
+  
 }

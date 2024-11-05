@@ -17,6 +17,6 @@ Router.route('/create').post(
   courseController.create
 )
 
-Router.route('/add-noteLesson').post(courseController.addNoteLesson)
+
 
 export const courseRoutes = Router

@@ -78,7 +78,7 @@ const getCommentsByBlogId = async (blogId: any) => {
             foreignField: '_id',
             as: 'commented_by',
             pipeline: [
-              { $project: { avatar_url: 1, fullName: 1 } } // Chỉ lấy avatar_url và fullName
+              { $project: { avatar_url: 1, fullName: 1 } } 
             ]
           }
         },
@@ -86,14 +86,14 @@ const getCommentsByBlogId = async (blogId: any) => {
       ])
       .toArray()
     comments.forEach((comment: any) => {
-      // Cập nhật phần replies trong comment cha
+
       if (comment.children && comment.children.length > 0) {
         comment.replies = comment.children.map((childId: any) => {
           return comments.find((c: any) => c._id.toString() === childId.toString())
         })
       }
       if (comment.commented_by && comment.commented_by.length > 0) {
-        comment.commented_by = comment.commented_by[0] // Chỉ cần lấy một phần tử duy nhất, vì 'commented_by' là duy nhất
+        comment.commented_by = comment.commented_by[0] 
       }
     })
     return comments

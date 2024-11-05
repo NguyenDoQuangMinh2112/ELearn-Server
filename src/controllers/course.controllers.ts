@@ -35,8 +35,5 @@ const getAllCourses = async (req: Request, res: Response, next: NextFunction) =>
   }
 }
 
-const addNoteLesson = async (req: Request, res: Response, next: NextFunction) => {
-  const createNoteLesson = await lessonServices.addNoteLesson(req.body)
-  res.status(StatusCodes.CREATED).json(createNoteLesson)
-}
-export const courseController = { create, getDetailCourse, getAllCourses, addNoteLesson }
+
+export const courseController = { create, getDetailCourse, getAllCourses }

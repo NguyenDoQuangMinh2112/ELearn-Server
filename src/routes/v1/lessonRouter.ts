@@ -11,4 +11,8 @@ Router.route('/oauth2callback').get(lessonController.oauth2callbackController)
 
 Router.route('/:id').get(lessonController.getDetails).put(lessonController.update)
 
+Router.route('/add-noteLesson').post(lessonController.addNoteLesson)
+
+Router.route('/list-note/:lessonID').get(lessonController.getNoteLessonByID)
+
 export const lessonRoutes = Router

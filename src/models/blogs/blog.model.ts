@@ -231,51 +231,11 @@ const reactions = async (blogId: string, userId: string, isLiked: boolean) => {
       )
 
     return updateResult
-    // if (action === 'like') {
-    //   if (blog.likes && blog.likes.includes(userId)) {
-    //     throw new Error('You have already liked this blog')
-    //   }
-    //   const updateResult = await GET_DB()
-    //     .collection(blogModel.BLOG_COLLECTION_NAME)
-    //     .updateOne(
-    //       { _id: new ObjectId(blogId) },
-    //       {
-    //         $push: { likes: new ObjectId(userId) }, // Thêm userId vào mảng likes
-    //         $inc: { 'activity.total_likes': 1 } // Tăng tổng số lượt like
-    //       }
-    //     )
-    //   if (updateResult.modifiedCount === 0) {
-    //     throw new Error('Failed to like the blog')
-    //   }
-    //   return updateResult
-    // } else if (action === 'unlike') {
-    //   if (!blog.likes || !blog.likes.includes(userId)) {
-    //     throw new Error('You have not liked this blog')
-    //   }
-    //   const updateResult = await GET_DB()
-    //     .collection(blogModel.BLOG_COLLECTION_NAME)
-    //     .updateOne(
-    //       { _id: new ObjectId(blogId) },
-    //       {
-    //         $pull: { likes: userId },
-    //         $inc: { 'activity.total_likes': -1 }
-    //       }
-    //     )
-
-    //   if (updateResult.modifiedCount === 0) {
-    //     throw new Error('Failed to unlike the blog')
-    //   }
-    //   return updateResult
-    // }
   } catch (error: any) {
     throw new Error(error)
   }
 }
 
-const likeByUser = async (blogId: string, userId: string) => {
-  try {
-  } catch (error) {}
-}
 
 export const blogModel = {
   BLOG_COLLECTION_NAME,
@@ -286,5 +246,5 @@ export const blogModel = {
   getDetails,
   findOneAndUpdate,
   reactions,
-  likeByUser
+ 
 }

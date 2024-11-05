@@ -73,5 +73,18 @@ const update = async (req: Request, res: Response, next: NextFunction) => {
   const updatedLesson = await lessonServices.update(lessonId, req.body)
   res.status(StatusCodes.OK).json(updatedLesson)
 }
+const addNoteLesson = async (req: Request, res: Response, next: NextFunction) => {
+  const createNoteLesson = await lessonServices.addNoteLesson(req.body)
+  res.status(StatusCodes.CREATED).json(createNoteLesson)
+}
 
-export const lessonController = { getAuthUrlController, oauth2callbackController, create, getDetails, update }
+const getNoteLessonByID = async (req: Request, res: Response, next: NextFunction)=>{
+  const {lessonID} = req.params
+
+  const noteLesson = await lessonServices.getNoteLessonByID(lessonID)
+  res.status(StatusCodes.OK).json(noteLesson)
+}
+
+export const lessonController = { getAuthUrlController, oauth2callbackController, create, getDetails, update,addNoteLesson,
+  getNoteLessonByID
+ }

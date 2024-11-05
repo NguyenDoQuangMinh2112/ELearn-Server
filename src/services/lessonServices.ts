@@ -85,4 +85,9 @@ const addNoteLesson = async (reqBody: any) => {
 
   return { statusCode: StatusCodes.CREATED, message: 'Create note lesson success!', data: result }
 }
-export const lessonServices = { uploadVideo, getDetails, update, addNoteLesson }
+
+const getNoteLessonByID = async (lessonID:string)=>{
+  const noteLesson = await noteLessonModel.getNoteLessonByID(lessonID);
+  return {statusCode:StatusCodes.OK, data:noteLesson}
+}
+export const lessonServices = { uploadVideo, getDetails, update, addNoteLesson,getNoteLessonByID }

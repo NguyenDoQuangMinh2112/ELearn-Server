@@ -4,9 +4,6 @@ import { GET_DB } from '~/configs/connectDB'
 import { ENROLL_COLLECTION_NAME } from '~/models/enroll.model'
 
 const enrollUser = async (userId: ObjectId, courseId: ObjectId) => {
-  console.log('userId', userId)
-  console.log('courseId', courseId)
-
   try {
     const enrollment = {
       user_id: userId,

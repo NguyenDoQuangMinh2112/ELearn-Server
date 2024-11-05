@@ -7,6 +7,10 @@ const Router = express.Router()
 
 Router.route('/').get(blogController.getAll)
 
+Router.route('/reactions').post(authMiddleware.isAuthorized, blogController.reactions)
+
+Router.route('/isliked-by-user').post(authMiddleware.isAuthorized, blogController.islikedByUser)
+
 Router.route('/:id').get(blogController.getDetails)
 
 Router.route('/create').post(

@@ -25,6 +25,7 @@ const create = async (notificationData: any) => {
     const validateData = await validateBeforeCreate(notificationData)
     const addNewNotification = {
       ...validateData,
+      user: new ObjectId(validateData.user),
       blog: new ObjectId(validateData.blog),
       notification_for: new ObjectId(validateData.notification_for),
       comment: new ObjectId(validateData.comment)
@@ -37,8 +38,41 @@ const create = async (notificationData: any) => {
   }
 }
 
+const checkNotificationExists = async (userId: string, type: string, blogId: string) => {
+  try {
+    const createdNotification = await GET_DB()
+      .collection(NOTIFICATION_COLLECTION_NAME)
+      .countDocuments({
+        user: new ObjectId(userId),
+        type: type,
+        blog: new ObjectId(blogId)
+      })
+
+    return createdNotification
+  } catch (error: any) {
+    throw new Error(error)
+  }
+}
+
+export const findOneAndDelete = async (userId: string, type: string, blogId: string) => {
+  try {
+    const result = await GET_DB()
+      .collection(NOTIFICATION_COLLECTION_NAME)
+      .findOneAndDelete({
+        user: new ObjectId(userId),
+        type: type,
+        blog: new ObjectId(blogId)
+      })
+    return result
+  } catch (error: any) {
+    throw new Error(error)
+  }
+}
+
 export const notificationModel = {
   NOTIFICATION_COLLECTION_NAME,
   NOTIFICATION_COLLECTION_SCHEMA,
-  create
+  create,
+  checkNotificationExists,
+  findOneAndDelete
 }

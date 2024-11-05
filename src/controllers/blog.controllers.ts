@@ -32,4 +32,17 @@ const getDetails = async (req: Request, res: Response, next: NextFunction) => {
   }
 }
 
-export const blogController = { create, getAll, getDetails }
+const reactions = async (req: Request, res: Response, next: NextFunction) => {
+  const { blogId, isLiked } = req.body
+  const userId = req?.jwtDecoded?.id
+  const createReaction = await blogServices.reactions(blogId, String(userId), isLiked)
+  res.status(StatusCodes.CREATED).json(createReaction)
+}
+const islikedByUser = async (req: Request, res: Response, next: NextFunction) => {
+  const { blogId } = req.body
+  const userId = req?.jwtDecoded?.id
+  const createLikedByUser = await blogServices.likeByUser(blogId, String(userId))
+  res.status(StatusCodes.CREATED).json(createLikedByUser)
+}
+
+export const blogController = { create, getAll, getDetails, reactions, islikedByUser }

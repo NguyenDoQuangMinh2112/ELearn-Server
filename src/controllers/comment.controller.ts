@@ -7,5 +7,9 @@ export const addComment = async (req: Request, res: Response, next: NextFunction
   const createdComment = await commentServices.addComment(userId, req.body)
   res.status(StatusCodes.CREATED).json(createdComment)
 }
-
-export const commentController = { addComment }
+export const getCommentByBlogId = async (req: Request, res: Response, next: NextFunction) => {
+  const { blogId } = req.params
+  const getCommentByBlogId = await commentServices.getCommentByBlogId(blogId)
+  res.status(StatusCodes.OK).json(getCommentByBlogId)
+}
+export const commentController = { addComment, getCommentByBlogId }

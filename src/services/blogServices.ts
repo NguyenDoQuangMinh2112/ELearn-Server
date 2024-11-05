@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { blogInterface } from '~/interfaces/blog.interface'
 import { blogModel } from '~/models/blogs/blog.model'
+import { notificationModel } from '~/models/blogs/notification.model'
 import ApiError from '~/utils/ApiError'
 const slugify = require('slugify')
 
@@ -30,4 +31,27 @@ const getDetails = async (id: string) => {
 
   return { statusCode: StatusCodes.OK, data: blog }
 }
-export const blogServices = { create, getAll, getDetails }
+const reactions = async (blogId: string, userId: string, isLiked: boolean) => {
+  const createReaction = await blogModel.reactions(blogId, userId, isLiked)
+
+  if (!isLiked) {
+    let likeNotification = {
+      type: 'like',
+      blog: blogId,
+      notification_for: String(createReaction.author),
+      user: userId
+    }
+    await notificationModel.create(likeNotification)
+    return { statusCode: StatusCodes.CREATED, data: { like_by_user: true } }
+  } else {
+    await notificationModel.findOneAndDelete(userId, 'like', blogId)
+    return { statusCode: StatusCodes.CREATED, data: { like_by_user: false } }
+  }
+}
+
+const likeByUser = async (blogId: string, userId: string) => {
+  const isLiked = await notificationModel.checkNotificationExists(userId, 'like', blogId)
+
+  return { statusCode: StatusCodes.OK, data: isLiked }
+}
+export const blogServices = { create, getAll, getDetails, reactions, likeByUser }

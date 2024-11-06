@@ -69,10 +69,20 @@ export const findOneAndDelete = async (userId: string, type: string, blogId: str
   }
 }
 
+const getAll = async () => {
+  try {
+    const result = await GET_DB().collection(NOTIFICATION_COLLECTION_NAME).find({}).toArray()
+    return result
+  } catch (error: any) {
+    throw new Error(error)
+  }
+}
+
 export const notificationModel = {
   NOTIFICATION_COLLECTION_NAME,
   NOTIFICATION_COLLECTION_SCHEMA,
   create,
   checkNotificationExists,
-  findOneAndDelete
+  findOneAndDelete,
+  getAll
 }

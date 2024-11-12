@@ -1,9 +1,8 @@
-import { StatusCodes } from "http-status-codes"
-import { notificationModel } from "~/models/blogs/notification.model"
+import { StatusCodes } from 'http-status-codes'
+import { notificationModel } from '~/models/blogs/notification.model'
 
-
-const getAll = async ()=>{
-    const notification = await notificationModel.getAll()
-    return { statusCode: StatusCodes.OK, data: notification }
+const getAll = async (userId: any) => {
+  const notification = await notificationModel.getAll(userId)
+  return { statusCode: StatusCodes.OK, data: notification }
 }
-export const notificationServices = {getAll}
+export const notificationServices = { getAll }

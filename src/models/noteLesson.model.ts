@@ -44,60 +44,74 @@ const addNoteLesson = async (reqBody: any) => {
     return createdNoteLesson
   } catch (error) {}
 }
-const getNoteLessonByID = async (lessonID:string)=>{
+const getNoteLessonByID = async (lessonID: string) => {
   try {
-    const noteLesson = await GET_DB().collection(NOTE_COLLECTION_NAME).aggregate([
-      {
-      $match:{
-        lesson_id: new ObjectId(lessonID)
-    
-      }
-    },
-    {
-      $lookup:{
-        from:chapterModel.CHAPTER_COLLECTION_NAME,
-        localField:'chapter_id',
-        foreignField:'_id',
-        as:'chapter_id',
-        pipeline: [
-          { $project: { title: 1, order: 1 } } 
-        ]
-      }
-    },
-    {
-      $lookup:{
-        from:lessonModel.LESSON_COLLECTION_NAME,
-        localField:'lesson_id',
-        foreignField:'_id',
-        as:'lesson_id',
-        pipeline: [
-          { $project: { title: 1, order: 1 } } 
-        ]
-      }
-    },
-  ]).toArray()
+    const noteLesson = await GET_DB()
+      .collection(NOTE_COLLECTION_NAME)
+      .aggregate([
+        {
+          $match: {
+            lesson_id: new ObjectId(lessonID)
+          }
+        },
+        {
+          $lookup: {
+            from: chapterModel.CHAPTER_COLLECTION_NAME,
+            localField: 'chapter_id',
+            foreignField: '_id',
+            as: 'chapter_id',
+            pipeline: [{ $project: { title: 1, order: 1 } }]
+          }
+        },
+        {
+          $lookup: {
+            from: lessonModel.LESSON_COLLECTION_NAME,
+            localField: 'lesson_id',
+            foreignField: '_id',
+            as: 'lesson_id',
+            pipeline: [{ $project: { title: 1, order: 1 } }]
+          }
+        }
+      ])
+      .toArray()
 
-  noteLesson.forEach((note:any)=>{
-    if (note.chapter_id && note.chapter_id.length > 0) {
-      note.chapter_id = note.chapter_id[0] 
-    }
-    if (note.lesson_id && note.lesson_id.length > 0) {
-      note.lesson_id = note.lesson_id[0] 
-    }
-  })
-    
+    noteLesson.forEach((note: any) => {
+      if (note.chapter_id && note.chapter_id.length > 0) {
+        note.chapter_id = note.chapter_id[0]
+      }
+      if (note.lesson_id && note.lesson_id.length > 0) {
+        note.lesson_id = note.lesson_id[0]
+      }
+    })
+
     if (!noteLesson) {
-      throw new Error('Lesson not found');
+      throw new Error('Lesson not found')
     }
-    return noteLesson;
-  } catch (error:any) {
+    return noteLesson
+  } catch (error: any) {
     throw new Error()
   }
 }
+
+const updateNoteLesson = async (noteLessonId: string, reqBody: any) => {
+  try {
+    const result = await GET_DB()
+      .collection(NOTE_COLLECTION_NAME)
+      .findOneAndUpdate({ _id: new ObjectId(noteLessonId) }, { $set: reqBody }, { returnDocument: 'after' })
+    if (!result) {
+      throw new Error('Note lesson not found!')
+    }
+    return result
+  } catch (error: any) {
+    throw new Error(error)
+  }
+}
+
 export const noteLessonModel = {
   NOTE_COLLECTION_NAME,
   NOTE_COLLECTION_SCHEMA,
   addNoteLesson,
   findOneById,
-  getNoteLessonByID
+  getNoteLessonByID,
+  updateNoteLesson
 }

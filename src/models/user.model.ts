@@ -201,5 +201,6 @@ export const userModel = {
   getAll,
   resetPassword,
   uploadAvatar,
-  updateInfo
+  updateInfo,
+  findOneById
 }

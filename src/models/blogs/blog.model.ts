@@ -36,7 +36,7 @@ const validateBeforeCreate = async (data: any) => {
 const findOneById = async (id: any) => {
   try {
     const result = await GET_DB()
-      .collection(BLOG_COLLECTION_SCHEMA)
+      .collection(BLOG_COLLECTION_NAME)
       .findOne({
         _id: new ObjectId(id)
       })
@@ -87,13 +87,14 @@ const create = async (reqBody: blogInterface) => {
       return { message: 'Something went wrong!', data: null }
     }
 
-    return result // Trả về blog vừa tạo
+    return result
   } catch (error: any) {
     throw new Error(error)
   }
 }
 
-const getAll = async () => {
+const getAll = async (page: number, limit: number) => {
+  const skip = (page - 1) * limit
   try {
     const result = await GET_DB()
       .collection(BLOG_COLLECTION_NAME)
@@ -127,9 +128,12 @@ const getAll = async () => {
             _destroy: 1,
             'author.fullName': 1,
             'author.avatar_url': 1,
-            'author.role': 1
+            'author.role': 1,
+            'author._id': 1
           }
-        }
+        },
+        { $skip: skip },
+        { $limit: limit }
       ])
       .toArray()
 
@@ -138,7 +142,14 @@ const getAll = async () => {
     throw new Error(error)
   }
 }
-
+const countBlogs = async () => {
+  try {
+    const count = await GET_DB().collection(BLOG_COLLECTION_NAME).countDocuments()
+    return count
+  } catch (error: any) {
+    throw new Error(error)
+  }
+}
 const getDetails = async (id: any) => {
   try {
     const result = await GET_DB()
@@ -192,6 +203,7 @@ const getDetails = async (id: any) => {
             createdAt: 1,
             updatedAt: 1,
             _destroy: 1,
+            'author._id': 1,
             'author.fullName': 1,
             'author.avatar_url': 1,
             'author.role': 1
@@ -225,8 +237,8 @@ const reactions = async (blogId: string, userId: string, isLiked: boolean) => {
       .findOneAndUpdate(
         { _id: new ObjectId(blogId) },
         {
-          $push: { likes: new ObjectId(userId) }, // Thêm userId vào mảng likes
-          $inc: { 'activity.total_likes': increamentVal } // Tăng tổng số lượt like
+          $push: { likes: new ObjectId(userId) },
+          $inc: { 'activity.total_likes': increamentVal }
         }
       )
 
@@ -235,7 +247,6 @@ const reactions = async (blogId: string, userId: string, isLiked: boolean) => {
     throw new Error(error)
   }
 }
-
 
 export const blogModel = {
   BLOG_COLLECTION_NAME,
@@ -246,5 +257,5 @@ export const blogModel = {
   getDetails,
   findOneAndUpdate,
   reactions,
- 
+  countBlogs
 }

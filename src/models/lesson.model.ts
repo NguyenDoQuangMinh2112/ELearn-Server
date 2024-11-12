@@ -127,6 +127,5 @@ export const lessonModel = {
   findOneById,
   getDetails,
   update,
-  pushNoteLessonIds ,
-  
+  pushNoteLessonIds
 }

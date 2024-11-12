@@ -17,14 +17,25 @@ const create = async (reqBody: blogInterface) => {
   return { statusCode: StatusCodes.CREATED, message: 'Blog created successfully!', data: createNewBlog }
 }
 
-const getAll = async () => {
-  const blog = await blogModel.getAll()
+const getAll = async (page: number, limit: number) => {
+  const blog = await blogModel.getAll(page, limit)
+  const totalBlogs = await blogModel.countBlogs()
 
   if (!blog) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'blog not found')
   }
 
-  return { statusCode: StatusCodes.OK, message: 'Get all blogs successfully', data: blog }
+  return {
+    statusCode: StatusCodes.OK,
+    message: 'Get all blogs successfully',
+    pagination: {
+      currentPage: page,
+      totalBlogs: totalBlogs,
+      totalPages: Math.ceil(totalBlogs / limit),
+      pageSize: limit
+    },
+    data: blog
+  }
 }
 const getDetails = async (id: string) => {
   const blog = await blogModel.getDetails(id)
@@ -39,7 +50,8 @@ const reactions = async (blogId: string, userId: string, isLiked: boolean) => {
       type: 'like',
       blog: blogId,
       notification_for: String(createReaction.author),
-      user: userId
+      user: userId,
+      createdAt: Date.now()
     }
     await notificationModel.create(likeNotification)
     return { statusCode: StatusCodes.CREATED, data: { like_by_user: true } }

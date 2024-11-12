@@ -17,6 +17,4 @@ Router.route('/create').post(
   courseController.create
 )
 
-
-
 export const courseRoutes = Router

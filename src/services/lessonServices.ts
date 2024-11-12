@@ -15,7 +15,6 @@ interface VideoMetadata {
 }
 
 const uploadVideo = async (auth: OAuth2Client, filePath: string, metadata: VideoMetadata) => {
-  console.log('🚀 ~ uploadVideo ~ filePath:', filePath)
   const youtube = google.youtube('v3')
   const fileSize = fs.statSync(filePath).size
 
@@ -86,8 +85,21 @@ const addNoteLesson = async (reqBody: any) => {
   return { statusCode: StatusCodes.CREATED, message: 'Create note lesson success!', data: result }
 }
 
-const getNoteLessonByID = async (lessonID:string)=>{
-  const noteLesson = await noteLessonModel.getNoteLessonByID(lessonID);
-  return {statusCode:StatusCodes.OK, data:noteLesson}
+const getNoteLessonByID = async (lessonID: string) => {
+  const noteLesson = await noteLessonModel.getNoteLessonByID(lessonID)
+  return { statusCode: StatusCodes.OK, data: noteLesson }
 }
-export const lessonServices = { uploadVideo, getDetails, update, addNoteLesson,getNoteLessonByID }
+const updateNoteLesson = async (userId: string, reqBody: any) => {
+  const data = {
+    ...reqBody,
+    updatedAt: Date.now()
+  }
+  const updatedNote = await noteLessonModel.updateNoteLesson(userId, data)
+
+  return {
+    statusCode: updatedNote ? StatusCodes.OK : StatusCodes.UNPROCESSABLE_ENTITY,
+    message: updatedNote ? 'Update note lesson success!' : 'Something went wrong!',
+    data: updatedNote ? updatedNote : null
+  }
+}
+export const lessonServices = { uploadVideo, getDetails, update, addNoteLesson, getNoteLessonByID, updateNoteLesson }

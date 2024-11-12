@@ -28,12 +28,18 @@ const getDetailCourse = async (req: Request, res: Response, next: NextFunction) 
 
 const getAllCourses = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const couse = await courseServices.getAll()
-    res.status(StatusCodes.OK).json(couse)
+    const course = await courseServices.getAll()
+    res.status(StatusCodes.OK).json(course)
   } catch (error) {
     next(error)
   }
 }
 
+const search = async (req: Request, res: Response, next: NextFunction) => {
+  const keyword = req.query.q as string
 
-export const courseController = { create, getDetailCourse, getAllCourses }
+  const searchData = await courseServices.search(keyword)
+  res.status(StatusCodes.OK).json(searchData)
+}
+
+export const courseController = { create, getDetailCourse, getAllCourses, search }

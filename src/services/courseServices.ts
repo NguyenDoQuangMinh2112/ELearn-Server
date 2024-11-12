@@ -45,5 +45,9 @@ const getAll = async () => {
 
   return { statusCode: StatusCodes.OK, message: 'Get all courses successfully', data: course }
 }
+const search = async (keyword: string) => {
+  const searchData = await courseModel.search(keyword)
 
-export const courseServices = { create, getDetails, getAll }
+  return { statusCode: StatusCodes.OK, data: searchData }
+}
+export const courseServices = { create, getDetails, getAll, search }

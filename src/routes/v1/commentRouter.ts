@@ -1,5 +1,5 @@
 import express from 'express'
-import { commentController } from '~/controllers/comment.controller'
+import { commentController } from '~/controllers/comment.controllers'
 import { authMiddleware } from '~/middlewares/authMiddleware'
 const Router = express.Router()
 

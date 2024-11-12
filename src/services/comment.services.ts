@@ -1,9 +1,9 @@
 import { StatusCodes } from 'http-status-codes'
-import { create } from 'lodash'
-import { ObjectId } from 'mongodb'
 import { blogModel } from '~/models/blogs/blog.model'
 import { commentModel } from '~/models/blogs/comment.model'
 import { notificationModel } from '~/models/blogs/notification.model'
+import { userModel } from '~/models/user.model'
+import { getUser, io } from '~/sockets/socket'
 
 export const addComment = async (idUser: any, reqBody: any) => {
   const isReply = !!reqBody.parent
@@ -26,19 +26,25 @@ export const addComment = async (idUser: any, reqBody: any) => {
       await commentModel.addReply(parent, getNewComment._id)
     }
 
-    // await blogModel.findOneAndUpdate(blog_id, { commentId: getNewComment._id })
-
+    const parentComment = await commentModel.findOneById(reqBody.parent)
+    let notificationForUser = isReply ? parentComment.commented_by : blog_author
     // Tạo thông báo cho người dùng
     const notificationObj = {
       type: isReply ? 'reply' : 'comment',
       blog: String(blog_id),
-      notification_for: String(isReply ? reqBody.parent : blog_author),
+      notification_for: String(notificationForUser),
       user: idUser,
       comment: String(getNewComment._id),
       createdAt: Date.now()
     }
+    const notification = await notificationModel.create(notificationObj)
+    const result = await notificationModel.findOneById(notification.insertedId)
+    const detailNotification = await notificationModel.getDetail(result._id)
 
-    await notificationModel.create(notificationObj) // Hoặc dùng phương thức thích hợp để tạo notification
+    const userSocket = getUser(String(notificationForUser))
+    if (userSocket) {
+      io.to(userSocket.socketId).emit('newNotification', detailNotification)
+    }
   }
 
   return { statusCode: StatusCodes.CREATED, message: 'Comment created successfully!', data: getNewComment }

@@ -3,7 +3,8 @@ import { StatusCodes } from 'http-status-codes'
 import { notificationServices } from '~/services/notificationServices'
 
 const getAll = async (req: Request, res: Response, next: NextFunction) => {
-  const notifications = await notificationServices.getAll()
+  const userId = req.jwtDecoded?.id
+  const notifications = await notificationServices.getAll(userId)
 
   res.status(StatusCodes.OK).json(notifications)
 }

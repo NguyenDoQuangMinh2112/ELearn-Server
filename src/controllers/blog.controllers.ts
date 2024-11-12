@@ -15,7 +15,9 @@ const create = async (req: Request, res: Response, next: NextFunction) => {
 }
 const getAll = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const blogs = await blogServices.getAll()
+    const page = parseInt(req.query.page as string) || 1 // Trang hiện tại
+    const limit = parseInt(req.query.limit as string) || 10
+    const blogs = await blogServices.getAll(page, limit)
     res.status(StatusCodes.OK).json(blogs)
   } catch (error) {
     next(error)

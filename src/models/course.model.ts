@@ -7,6 +7,7 @@ import { chapterModel } from './chapter.model'
 import { lessonModel } from './lesson.model'
 import { userModel } from './user.model'
 import { noteLessonModel } from './noteLesson.model'
+import { blogModel } from './blogs/blog.model'
 
 const COURSE_COLLECTION_NAME = 'courses'
 
@@ -181,7 +182,35 @@ const pushChapterIds = async (chapter: any) => {
     throw new Error(error)
   }
 }
+const search = async (keyword: string) => {
+  try {
+    const coursesCollection = await GET_DB().collection(COURSE_COLLECTION_NAME)
+    const blogsCollection = await GET_DB().collection(blogModel.BLOG_COLLECTION_NAME)
+    const searchCondition = {
+      $or: [
+        { title: { $regex: keyword, $options: 'i' } }, // Tìm kiếm theo `title`
+        { description: { $regex: keyword, $options: 'i' } } // Tìm kiếm theo `description`
+      ]
+    }
 
+    const courses = await coursesCollection
+      .find(searchCondition, {
+        projection: { _id: 1, thumbnail: 1, title: 1 }
+      })
+      .toArray()
+    const blogs = await blogsCollection
+      .find(searchCondition, {
+        projection: { _id: 1, banner: 1, title: 1 }
+      })
+      .toArray()
+    return {
+      courses,
+      blogs
+    }
+  } catch (error: any) {
+    throw new Error(error)
+  }
+}
 export const courseModel = {
   COURSE_COLLECTION_NAME,
   COURSE_COLLECTION_SCHEMA,
@@ -189,5 +218,6 @@ export const courseModel = {
   create,
   getDetails,
   getAll,
-  pushChapterIds
+  pushChapterIds,
+  search
 }

@@ -37,7 +37,6 @@ const enrollCourse = async (req: Request, res: Response, next: NextFunction) => 
   }
 
   const enrollment = await enrollUser(user_id, course_id)
-  console.log('🚀 ~ enrollCourse ~ enrollment:', enrollment)
 }
 
 export const enrollController = { enrollCourse }

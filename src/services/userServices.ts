@@ -73,7 +73,11 @@ const uploadAvatar = async (userId: string, path: any) => {
   return { success: true, avatar_url: updatedUser.avatar_url }
 }
 const updateInfo = async (userId: string, reqBody: any) => {
-  const updatedUser = await userModel.updateInfo(userId, reqBody)
+  const data = {
+    ...reqBody,
+    updatedAt: Date.now()
+  }
+  const updatedUser = await userModel.updateInfo(userId, data)
 
   return {
     statusCode: updatedUser ? StatusCodes.OK : StatusCodes.UNPROCESSABLE_ENTITY,

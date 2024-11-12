@@ -6,10 +6,10 @@ import { env } from '~/configs/evironment'
 import { CLOSE_DB, CONNECT_DB } from './configs/connectDB'
 import { errorHandlingMiddleware } from '~/middlewares/errorHandlingMiddleware'
 import { APIs_V1 } from './routes/v1'
+import { courseController } from './controllers/course.controllers'
+import { app, server } from './sockets/socket'
 
 const START_SERVER = () => {
-  const app = express()
-
   app.use((req, res, next) => {
     res.set('Cache-Control', 'no-store')
     next()
@@ -29,11 +29,11 @@ const START_SERVER = () => {
 
   // User API v1
   app.use('/v1', APIs_V1)
-
+  app.use('/search', courseController.search)
   // Middleware handlle error
   app.use(errorHandlingMiddleware)
 
-  app.listen(process.env.PORT, () => {
+  server.listen(process.env.PORT, () => {
     console.log(`2. I am running on Production at Port ${env.PORT}`)
   })
 

@@ -24,12 +24,12 @@ const removeUser = (socketId: string) => {
   onlineUsers = onlineUsers.filter((user: any) => user.socketId !== socketId)
 }
 
-io.on('connection', (socket) => {
-  socket.on('newUser', (userId) => {
+io.on('connection', (socket:any) => {
+  socket.on('newUser', (userId:string) => {
     addNewUser(userId, socket.id)
   })
 
-  socket.on('newNotification', (notification) => {
+  socket.on('newNotification', (notification:any) => {
     const userSocket = getUser(notification.notification_for)
     if (userSocket) {
       // Gửi sự kiện chỉ tới người nhận

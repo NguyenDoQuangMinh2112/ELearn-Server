@@ -8,11 +8,6 @@ const QUIZ_QUESTION_COLLECTION_SCHEMA = Joi.object({
   question: Joi.string().required().trim().strict(),
   options: Joi.array().optional(),
   correct_answer: Joi.string().optional(),
-  question_type: Joi.string()
-    .optional()
-    .valid('multiple_choice', 'true_false', 'short_answer', 'essay')
-    .default('essay'),
-  topic: Joi.string().optional().trim().strict(),
   createdAt: Joi.date().timestamp('javascript').default(Date.now),
   updatedAt: Joi.date().timestamp('javascript').default(null),
   _destroy: Joi.boolean().default(false)

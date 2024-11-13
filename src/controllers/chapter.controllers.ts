@@ -18,5 +18,21 @@ const getAll = async (req: Request, res: Response, next: NextFunction) => {
     next(error)
   }
 }
+const createQuestionExercise = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const exercise = await chapterServices.createQuestionExercise(req.body)
+    res.status(StatusCodes.CREATED).json(exercise)
+  } catch (error) {
+    next(error)
+  }
+}
 
-export const chapterController = { create, getAll }
+const createAnswerExercise = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const question = await chapterServices.createAnswerExercise(req.body)
+    res.status(StatusCodes.CREATED).json(question)
+  } catch (error) {
+    next(error)
+  }
+}
+export const chapterController = { create, getAll, createQuestionExercise, createAnswerExercise }

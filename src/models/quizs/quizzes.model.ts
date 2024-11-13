@@ -37,7 +37,7 @@ const createQuestionExercise = async (reqBody: any) => {
     const validateData = await validateBeforeCreate(reqBody)
     const addNewQuestion = {
       ...validateData,
-      chapterId: new ObjectId(validateData.chapter_id)
+      chapterId: new ObjectId(validateData.chapterId)
     }
     const result = await GET_DB().collection(QUIZZES_COLLECTION_NAME).insertOne(addNewQuestion)
 

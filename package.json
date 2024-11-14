@@ -5,6 +5,7 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "npx nodemon",
+    "start": "node src/server.js",
     "clean": "rimraf build && mkdir build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

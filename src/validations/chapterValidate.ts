@@ -48,7 +48,7 @@ const createAnswerExercise = async (req: Request, res: Response, next: NextFunct
     quizId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
     question: Joi.string().required().trim().strict(),
     options: Joi.array().optional(),
-    correct_answer: Joi.string().optional(),
+    correct_answer: Joi.string().optional()
   })
 
   try {

@@ -1,6 +1,7 @@
 import Joi from 'joi'
 import { ObjectId } from 'mongodb'
 import { GET_DB } from '~/configs/connectDB'
+import { catchAsyncErrors } from '~/middlewares/catchAsyncErrors'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 
 const QUIZ_QUESTION_COLLECTION_NAME = 'quizQuestion'
@@ -20,42 +21,34 @@ const validateBeforeCreate = async (data: any) => {
   return await QUIZ_QUESTION_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
 }
 
-const findOneById = async (id: any) => {
-  try {
-    const result = await GET_DB()
-      .collection(QUIZ_QUESTION_COLLECTION_NAME)
-      .findOne({
-        _id: new ObjectId(id)
-      })
-    return result
-  } catch (error: any) {
-    throw new Error(error)
-  }
-}
-
-const createAnswerExercise = async (reqBody: any) => {
-  try {
-    const validateData = await validateBeforeCreate(reqBody)
-    const existingQuestion = await GET_DB().collection(QUIZ_QUESTION_COLLECTION_NAME).findOne({
-      question: validateData.question.trim()
+const findOneById = catchAsyncErrors(async (id: any) => {
+  const result = await GET_DB()
+    .collection(QUIZ_QUESTION_COLLECTION_NAME)
+    .findOne({
+      _id: new ObjectId(id)
     })
+  return result
+})
 
-    if (existingQuestion) {
-      throw new Error('Câu hỏi này đã tồn tại.')
-    }
-    const addNewAnswer = {
-      ...validateData,
-      quizId: new ObjectId(validateData.quizId)
-    }
-    const result = await GET_DB().collection(QUIZ_QUESTION_COLLECTION_NAME).insertOne(addNewAnswer)
+const createAnswerExercise = catchAsyncErrors(async (reqBody: any) => {
+  const validateData = await validateBeforeCreate(reqBody)
+  const existingQuestion = await GET_DB().collection(QUIZ_QUESTION_COLLECTION_NAME).findOne({
+    question: validateData.question.trim()
+  })
 
-    const insertedLesson = await GET_DB().collection(QUIZ_QUESTION_COLLECTION_NAME).findOne({ _id: result.insertedId })
-
-    return insertedLesson
-  } catch (error: any) {
-    throw new Error(error)
+  if (existingQuestion) {
+    throw new Error('This question already exists!')
   }
-}
+  const addNewAnswer = {
+    ...validateData,
+    quizId: new ObjectId(validateData.quizId)
+  }
+  const result = await GET_DB().collection(QUIZ_QUESTION_COLLECTION_NAME).insertOne(addNewAnswer)
+
+  const insertedLesson = await GET_DB().collection(QUIZ_QUESTION_COLLECTION_NAME).findOne({ _id: result.insertedId })
+
+  return insertedLesson
+})
 
 export const quizQuestionModle = {
   QUIZ_QUESTION_COLLECTION_NAME,

@@ -5,6 +5,7 @@ import { ReqBodyLogin, ReqBodyRegister, User } from '~/interfaces/user.interface
 import { JwtProvider } from '~/providers/jwtProvider'
 import { ObjectId } from 'mongodb'
 import { enrollModel } from './enroll.model'
+import { catchAsyncErrors } from '~/middlewares/catchAsyncErrors'
 
 const USER_COLLECTION_NAME = 'users'
 
@@ -26,38 +27,29 @@ const validateBeforeCreate = async (data: any) => {
   return await USER_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
 }
 
-const findOneById = async (id: any) => {
-  try {
-    const result = await GET_DB()
-      .collection(USER_COLLECTION_NAME)
-      .findOne({
-        _id: new ObjectId(id)
-      })
-    return result
-  } catch (error: any) {
-    throw new Error(error)
+const findOneById = catchAsyncErrors(async (id: any) => {
+  const result = await GET_DB()
+    .collection(USER_COLLECTION_NAME)
+    .findOne({
+      _id: new ObjectId(id)
+    })
+  return result
+})
+
+const register = catchAsyncErrors(async (data: ReqBodyRegister) => {
+  const validateData = await validateBeforeCreate(data)
+  const existingUser = await GET_DB().collection(USER_COLLECTION_NAME).findOne({ email: data.email })
+  if (existingUser) {
+    throw new Error('Người dùng đã tồn tại !')
   }
-}
 
-const register = async (data: ReqBodyRegister) => {
-  try {
-    const validateData = await validateBeforeCreate(data)
-    const existingUser = await GET_DB().collection(USER_COLLECTION_NAME).findOne({ email: data.email })
-    if (existingUser) {
-      // if user exists already => throw an error
-      throw new Error('Người dùng đã tồn tại !')
-    }
-    // Manually hash the password before saving to the database
-    validateData.password = await bcrypt.hash(validateData.password, 10)
-    const createdUser = await GET_DB().collection(USER_COLLECTION_NAME).insertOne(validateData)
+  validateData.password = await bcrypt.hash(validateData.password, 10)
+  const createdUser = await GET_DB().collection(USER_COLLECTION_NAME).insertOne(validateData)
 
-    return createdUser
-  } catch (error: any) {
-    throw new Error(error)
-  }
-}
+  return createdUser
+})
 
-const login = async (data: ReqBodyLogin) => {
+const login = catchAsyncErrors(async (data: ReqBodyLogin) => {
   const { email, password } = data
   const user = (await GET_DB().collection(USER_COLLECTION_NAME).findOne({ email })) as User
 
@@ -87,8 +79,8 @@ const login = async (data: ReqBodyLogin) => {
   const refreshToken = await JwtProvider.generateToken(userInfo, String(secretSignatureRefreshToken), '14 days')
 
   return { accessToken, refreshToken, userWithoutPassword }
-}
-const emailCheckedBeforeRegister = async (email: string) => {
+})
+const emailCheckedBeforeRegister = catchAsyncErrors(async (email: string) => {
   let isAvailable: boolean
   const existingUser = await GET_DB().collection(USER_COLLECTION_NAME).findOne({ email: email })
   if (existingUser) {
@@ -99,28 +91,26 @@ const emailCheckedBeforeRegister = async (email: string) => {
   }
 
   return { isAvailable }
-}
-const getDetail = async (idU: any) => {
-  try {
-    const result = await GET_DB()
-      .collection(USER_COLLECTION_NAME)
-      .aggregate([
-        {
-          $match: { _id: new ObjectId(idU), _destroy: false }
-        },
-        {
-          $lookup: {
-            from: enrollModel.ENROLL_COLLECTION_NAME,
-            localField: '_id',
-            foreignField: 'user_id',
-            as: 'enrolls'
-          }
+})
+const getDetail = catchAsyncErrors(async (idU: any) => {
+  const result = await GET_DB()
+    .collection(USER_COLLECTION_NAME)
+    .aggregate([
+      {
+        $match: { _id: new ObjectId(idU), _destroy: false }
+      },
+      {
+        $lookup: {
+          from: enrollModel.ENROLL_COLLECTION_NAME,
+          localField: '_id',
+          foreignField: 'user_id',
+          as: 'enrolls'
         }
-      ])
-      .toArray()
-    return result[0] || {}
-  } catch (error) {}
-}
+      }
+    ])
+    .toArray()
+  return result[0] || {}
+})
 
 const getAll = async () => {
   try {
@@ -130,66 +120,54 @@ const getAll = async () => {
     throw new Error(error)
   }
 }
-const resetPassword = async (idUser: string, reqBody: any) => {
-  try {
-    const { currentPassword, newPassword, confirmPassword } = reqBody
-    if (!currentPassword) {
-      throw new Error('Missing current password value!')
-    }
-    if (!newPassword) {
-      throw new Error('Missing new password value!')
-    }
-    if (!confirmPassword) {
-      throw new Error('Missing confirm password value!')
-    }
-
-    if (newPassword !== confirmPassword) {
-      throw new Error('The new password does not match !')
-    }
-
-    const existingUser = await findOneById(idUser)
-    if (!existingUser) {
-      throw new Error('User not found')
-    }
-    const isPasswordMatch = await bcrypt.compare(currentPassword, existingUser.password)
-
-    if (!isPasswordMatch) {
-      throw new Error('Incorrect old password')
-    }
-
-    const hashedNewPassword = await bcrypt.hash(newPassword, 10)
-    const updated = await GET_DB()
-      .collection(USER_COLLECTION_NAME)
-      .updateOne({ _id: new ObjectId(idUser) }, { $set: { password: hashedNewPassword } })
-    return updated
-  } catch (error: any) {
-    throw new Error(error)
+const resetPassword = catchAsyncErrors(async (idUser: string, reqBody: any) => {
+  const { currentPassword, newPassword, confirmPassword } = reqBody
+  if (!currentPassword) {
+    throw new Error('Missing current password value!')
   }
-}
-
-const uploadAvatar = async (userId: string, path: any) => {
-  try {
-    const result = await GET_DB()
-      .collection(USER_COLLECTION_NAME)
-      .findOneAndUpdate({ _id: new ObjectId(userId) }, { $set: { avatar_url: path } }, { returnDocument: 'after' })
-
-    return result
-  } catch (error: any) {
-    throw new Error(error)
+  if (!newPassword) {
+    throw new Error('Missing new password value!')
   }
-}
-
-const updateInfo = async (userId: string, reqBody: any) => {
-  try {
-    const result = await GET_DB()
-      .collection(USER_COLLECTION_NAME)
-      .findOneAndUpdate({ _id: new ObjectId(userId) }, { $set: reqBody }, { returnDocument: 'after' })
-
-    return result
-  } catch (error: any) {
-    throw new Error(error)
+  if (!confirmPassword) {
+    throw new Error('Missing confirm password value!')
   }
-}
+
+  if (newPassword !== confirmPassword) {
+    throw new Error('The new password does not match !')
+  }
+
+  const existingUser = await findOneById(idUser)
+  if (!existingUser) {
+    throw new Error('User not found')
+  }
+  const isPasswordMatch = await bcrypt.compare(currentPassword, existingUser.password)
+
+  if (!isPasswordMatch) {
+    throw new Error('Incorrect old password')
+  }
+
+  const hashedNewPassword = await bcrypt.hash(newPassword, 10)
+  const updated = await GET_DB()
+    .collection(USER_COLLECTION_NAME)
+    .updateOne({ _id: new ObjectId(idUser) }, { $set: { password: hashedNewPassword } })
+  return updated
+})
+
+const uploadAvatar = catchAsyncErrors(async (userId: string, path: any) => {
+  const result = await GET_DB()
+    .collection(USER_COLLECTION_NAME)
+    .findOneAndUpdate({ _id: new ObjectId(userId) }, { $set: { avatar_url: path } }, { returnDocument: 'after' })
+
+  return result
+})
+
+const updateInfo = catchAsyncErrors(async (userId: string, reqBody: any) => {
+  const result = await GET_DB()
+    .collection(USER_COLLECTION_NAME)
+    .findOneAndUpdate({ _id: new ObjectId(userId) }, { $set: reqBody }, { returnDocument: 'after' })
+
+  return result
+})
 
 export const userModel = {
   USER_COLLECTION_NAME,

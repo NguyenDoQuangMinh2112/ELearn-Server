@@ -39,7 +39,14 @@ const createQuestionExercise = async (reqBody: any) => {
   }
 
   const questionExercise = await quizzesModle.createQuestionExercise(data)
-  return questionExercise
+  if (questionExercise && !questionExercise.error) {
+    return { statusCode: StatusCodes.CREATED, message: 'Question created successfully!', data: questionExercise }
+  } else {
+    return {
+      statusCode: StatusCodes.BAD_REQUEST,
+      message: questionExercise.error
+    }
+  }
 }
 const createAnswerExercise = async (reqBody: any) => {
   const data = {
@@ -47,10 +54,15 @@ const createAnswerExercise = async (reqBody: any) => {
     createdAt: Date.now()
   }
   const answerExercise = await quizQuestionModle.createAnswerExercise(data)
-  if(answerExercise){
+  if (answerExercise && !answerExercise.error) {
     await quizzesModle.pushQuestionIds(answerExercise)
+    return { statusCode: StatusCodes.CREATED, message: 'Answer created successfully!', data: answerExercise }
+  } else {
+    return {
+      statusCode: StatusCodes.BAD_REQUEST,
+      message: answerExercise.error
+    }
   }
-  return answerExercise
 }
 
 export const chapterServices = { create, getAll, createQuestionExercise, createAnswerExercise }

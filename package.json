@@ -4,7 +4,6 @@
   "description": "",
   "main": "src/server.js",
   "scripts": {
-    "dev": "npx nodemon",
     "start": "node src/server.js",
     "clean": "rimraf build && mkdir build",
     "lint": "eslint .",
@@ -13,7 +12,8 @@
     "build-babel": "babel ./src -d ./build/src",
     "build": "npm run clean && npm run build-babel",
     "production": "npm run build && cross-env BUILD_MODE=production node ./build/src/server.js",
-    "prettier:fix": "prettier --write ."
+    "prettier:fix": "prettier --write .",
+    "dev": "npx nodemon"
   },
   "keywords": [],
   "author": "",
@@ -50,6 +50,7 @@
     "cloudinary": "^2.4.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
+    "cross-env": "^7.0.3",
     "crypto": "^1.0.1",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",

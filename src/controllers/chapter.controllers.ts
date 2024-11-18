@@ -20,4 +20,17 @@ const createAnswerExercise = catchAsync(async (req: Request, res: Response) => {
   const question = await chapterServices.createAnswerExercise(req.body)
   res.status(StatusCodes.CREATED).json(question)
 })
-export const chapterController = { create, getAll, createQuestionExercise, createAnswerExercise }
+const getAllChapterByCourseId = catchAsync(async (req: Request, res: Response) => {
+  const { courseId } = req.params
+
+  const chapters = await chapterServices.getAllChapterByCourseId(courseId)
+
+  res.status(StatusCodes.OK).json(chapters)
+})
+export const chapterController = {
+  create,
+  getAll,
+  createQuestionExercise,
+  createAnswerExercise,
+  getAllChapterByCourseId
+}

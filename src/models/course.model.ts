@@ -63,11 +63,11 @@ const getDetails = catchAsyncErrors(async (id: any) => {
           from: userModel.USER_COLLECTION_NAME,
           localField: 'instructor_id',
           foreignField: '_id',
-          as: 'instructor'
+          as: 'instructor_id'
         }
       },
       {
-        $unwind: '$instructor'
+        $unwind: '$instructor_id'
       },
       {
         $project: {
@@ -75,11 +75,11 @@ const getDetails = catchAsyncErrors(async (id: any) => {
           description: 1,
           price: 1,
           noteVideo: 1,
-          instructor: {
-            fullName: '$instructor.fullName',
-            email: '$instructor.email',
-            role: '$instructor.role',
-            thumbnail: '$instructor.avatar_url'
+          instructor_id: {
+            fullName: '$instructor_id.fullName',
+            email: '$instructor_id.email',
+            role: '$instructor_id.role',
+            thumbnail: '$instructor_id.avatar_url'
           },
           createdAt: 1,
           updatedAt: 1,
@@ -104,21 +104,39 @@ const getDetails = catchAsyncErrors(async (id: any) => {
         }
       },
       {
-        $lookup: {
-          from: quizzesModle.QUIZZES_COLLECTION_NAME,
-          localField: 'chapters._id',
-          foreignField: 'chapterId',
-          as: 'exercises'
-        }
-      },
-      {
-        $lookup: {
-          from: noteLessonModel.NOTE_COLLECTION_NAME,
-          localField: '_id',
-          foreignField: 'course_id',
-          as: 'noteLesson'
+        $addFields: {
+          lessons: {
+            $map: {
+              input: '$lessons',
+              as: 'lesson',
+              in: {
+                courseId: '$$lesson.courseId',
+                chapter_id: '$$lesson.chapter_id',
+                title: '$$lesson.title',
+                order: '$$lesson.order',
+                noteVideo: '$$lesson.noteVideo'
+              }
+            }
+          }
         }
       }
+
+      // {
+      //   $lookup: {
+      //     from: quizzesModle.QUIZZES_COLLECTION_NAME,
+      //     localField: 'chapters._id',
+      //     foreignField: 'chapterId',
+      //     as: 'exercises'
+      //   }
+      // },
+      // {
+      //   $lookup: {
+      //     from: noteLessonModel.NOTE_COLLECTION_NAME,
+      //     localField: '_id',
+      //     foreignField: 'course_id',
+      //     as: 'noteLesson'
+      //   }
+      // }
     ])
     .toArray()
 

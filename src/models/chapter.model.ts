@@ -57,11 +57,23 @@ const getAll = catchAsyncErrors(async () => {
   return result
 })
 
+const getAllChapterByCourseId = catchAsyncErrors(async (courseId: any) => {
+  const addNewChapter = {
+    courseId: new ObjectId(courseId)
+  }
+  const result = await GET_DB()
+    .collection(CHAPTER_COLLECTION_NAME)
+    .find({ courseId: new ObjectId(addNewChapter.courseId) })
+    .toArray()
+  return result
+})
+
 export const chapterModel = {
   CHAPTER_COLLECTION_NAME,
   CHAPTER_COLLECTION_SCHEMA,
   create,
   findOneById,
   pushLessonIdToChapter,
-  getAll
+  getAll,
+  getAllChapterByCourseId
 }

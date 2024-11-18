@@ -1,45 +1,33 @@
-import { NextFunction, Request, Response } from 'express'
+import { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
+import { catchAsync } from '~/middlewares/catchAsyncErrors'
 import { courseServices } from '~/services/courseServices'
-import { lessonServices } from '~/services/lessonServices'
 
-const create = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { body, file } = req
-    const thumbnailUrl = file?.path || '' // URL của hình ảnh từ Cloudinary
+const create = catchAsync(async (req: Request, res: Response) => {
+  const { body, file } = req
+  const thumbnailUrl = file?.path || '' // URL của hình ảnh từ Cloudinary
 
-    // Gắn URL của thumbnail vào body của request
-    const createNewCourse = await courseServices.create({ ...body, thumbnail: thumbnailUrl })
-    res.status(StatusCodes.CREATED).json(createNewCourse)
-  } catch (error) {
-    next(error)
-  }
-}
+  // Gắn URL của thumbnail vào body của request
+  const createNewCourse = await courseServices.create({ ...body, thumbnail: thumbnailUrl })
+  res.status(StatusCodes.CREATED).json(createNewCourse)
+})
 
-const getDetailCourse = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const courseId = req.params
-    const course = await courseServices.getDetails(courseId)
-    res.status(StatusCodes.OK).json(course)
-  } catch (error) {
-    next(error)
-  }
-}
+const getDetailCourse = catchAsync(async (req: Request, res: Response) => {
+  const courseId = req.params
+  const course = await courseServices.getDetails(courseId)
+  res.status(StatusCodes.OK).json(course)
+})
 
-const getAllCourses = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const course = await courseServices.getAll()
-    res.status(StatusCodes.OK).json(course)
-  } catch (error) {
-    next(error)
-  }
-}
+const getAllCourses = catchAsync(async (req: Request, res: Response) => {
+  const course = await courseServices.getAll()
+  res.status(StatusCodes.OK).json(course)
+})
 
-const search = async (req: Request, res: Response, next: NextFunction) => {
+const search = catchAsync(async (req: Request, res: Response) => {
   const keyword = req.query.q as string
 
   const searchData = await courseServices.search(keyword)
   res.status(StatusCodes.OK).json(searchData)
-}
+})
 
 export const courseController = { create, getDetailCourse, getAllCourses, search }

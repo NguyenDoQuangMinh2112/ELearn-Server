@@ -30,9 +30,14 @@ const getDetails = async (courseId: any) => {
         return lesson._id.toString() === noteLesson.lesson_id.toString()
       })
     })
+
+    chapter.exercises = cloneCourse?.exercises?.filter(
+      (exercise: any) => exercise.chapterId.toString() === chapter._id.toString()
+    )
   })
   delete cloneCourse.noteLesson
   delete cloneCourse.lessons
+  delete cloneCourse.exercises
 
   return { statusCode: StatusCodes.OK, data: cloneCourse }
 }

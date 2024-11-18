@@ -5,6 +5,7 @@ import { LessonRequestBody } from '~/interfaces/lesson.interface'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 import { chapterModel } from './chapter.model'
 import { courseModel } from './course.model'
+import { catchAsyncErrors } from '~/middlewares/catchAsyncErrors'
 
 const LESSON_COLLECTION_NAME = 'lessons'
 
@@ -26,99 +27,78 @@ const validateBeforeCreate = async (data: any) => {
   return await LESSON_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
 }
 
-const findOneById = async (id: any) => {
-  try {
-    const result = await GET_DB()
-      .collection(LESSON_COLLECTION_NAME)
-      .findOne({
-        _id: new ObjectId(id)
-      })
-    return result
-  } catch (error: any) {
-    throw new Error(error)
+const findOneById = catchAsyncErrors(async (id: any) => {
+  const result = await GET_DB()
+    .collection(LESSON_COLLECTION_NAME)
+    .findOne({
+      _id: new ObjectId(id)
+    })
+  return result
+})
+
+const create = catchAsyncErrors(async (data: any) => {
+  const validateData = await validateBeforeCreate(data)
+  const addNewLesson = {
+    ...validateData,
+    courseId: new ObjectId(validateData.courseId),
+    chapter_id: new ObjectId(validateData.chapter_id)
   }
-}
 
-const create = async (data: any) => {
-  try {
-    const validateData = await validateBeforeCreate(data)
-    const addNewLesson = {
-      ...validateData,
-      courseId: new ObjectId(validateData.courseId),
-      chapter_id: new ObjectId(validateData.chapter_id)
-    }
-    // Insert the validated data into the database (assuming MongoDB)
-    const result = await GET_DB().collection(LESSON_COLLECTION_NAME).insertOne(addNewLesson)
+  const result = await GET_DB().collection(LESSON_COLLECTION_NAME).insertOne(addNewLesson)
 
-    // Optionally retrieve the inserted document
-    const insertedLesson = await GET_DB().collection(LESSON_COLLECTION_NAME).findOne({ _id: result.insertedId })
+  const insertedLesson = await GET_DB().collection(LESSON_COLLECTION_NAME).findOne({ _id: result.insertedId })
 
-    return insertedLesson // Return the newly created lesson
-  } catch (error: any) {
-    throw new Error(error)
-  }
-}
-const getDetails = async (id: any) => {
-  try {
-    const result = await GET_DB()
-      .collection(LESSON_COLLECTION_NAME)
-      .aggregate([
-        {
-          $match: {
-            _id: new ObjectId(id),
-            _destroy: false
-          }
-        },
-        {
-          $lookup: {
-            from: courseModel.COURSE_COLLECTION_NAME,
-            localField: 'courseId',
-            foreignField: '_id',
-            as: 'courseId'
-          }
-        },
-        {
-          $lookup: {
-            from: chapterModel.CHAPTER_COLLECTION_NAME,
-            localField: 'chapter_id',
-            foreignField: '_id',
-            as: 'chapter_id'
-          }
+  return insertedLesson
+})
+const getDetails = catchAsyncErrors(async (id: any) => {
+  const result = await GET_DB()
+    .collection(LESSON_COLLECTION_NAME)
+    .aggregate([
+      {
+        $match: {
+          _id: new ObjectId(id),
+          _destroy: false
         }
-      ])
-      .toArray()
+      },
+      {
+        $lookup: {
+          from: courseModel.COURSE_COLLECTION_NAME,
+          localField: 'courseId',
+          foreignField: '_id',
+          as: 'courseId'
+        }
+      },
+      {
+        $lookup: {
+          from: chapterModel.CHAPTER_COLLECTION_NAME,
+          localField: 'chapter_id',
+          foreignField: '_id',
+          as: 'chapter_id'
+        }
+      }
+    ])
+    .toArray()
 
-    return result[0] || {}
-  } catch (error: any) {
-    throw new Error(error)
-  }
-}
+  return result[0] || {}
+})
 
-const update = async (id: any, data: any) => {
-  try {
-    const result = await GET_DB()
-      .collection(LESSON_COLLECTION_NAME)
-      .findOneAndUpdate({ _id: new ObjectId(id) }, { $set: data }, { returnDocument: 'after' })
-    return result
-  } catch (error: any) {
-    throw new Error(error)
-  }
-}
-const pushNoteLessonIds = async (noteLesson: any) => {
-  try {
-    const result = await GET_DB()
-      .collection(LESSON_COLLECTION_NAME)
-      .findOneAndUpdate(
-        { _id: new ObjectId(noteLesson.lesson_id) },
-        { $push: { noteVideo: new ObjectId(noteLesson._id) } },
-        { returnDocument: 'after' }
-      )
+const update = catchAsyncErrors(async (id: any, data: any) => {
+  const result = await GET_DB()
+    .collection(LESSON_COLLECTION_NAME)
+    .findOneAndUpdate({ _id: new ObjectId(id) }, { $set: data }, { returnDocument: 'after' })
+  return result
+})
+const pushNoteLessonIds = catchAsyncErrors(async (noteLesson: any) => {
+  const result = await GET_DB()
+    .collection(LESSON_COLLECTION_NAME)
+    .findOneAndUpdate(
+      { _id: new ObjectId(noteLesson.lesson_id) },
+      { $push: { noteVideo: new ObjectId(noteLesson._id) } },
+      { returnDocument: 'after' }
+    )
 
-    return result
-  } catch (error: any) {
-    throw new Error(error)
-  }
-}
+  return result
+})
 
 export const lessonModel = {
   LESSON_COLLECTION_NAME,

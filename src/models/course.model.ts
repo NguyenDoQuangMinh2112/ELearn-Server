@@ -113,22 +113,13 @@ const getDetails = catchAsyncErrors(async (id: any) => {
                 courseId: '$$lesson.courseId',
                 chapter_id: '$$lesson.chapter_id',
                 title: '$$lesson.title',
-                order: '$$lesson.order',
-                noteVideo: '$$lesson.noteVideo'
+                order: '$$lesson.order'
               }
             }
           }
         }
       }
 
-      // {
-      //   $lookup: {
-      //     from: quizzesModle.QUIZZES_COLLECTION_NAME,
-      //     localField: 'chapters._id',
-      //     foreignField: 'chapterId',
-      //     as: 'exercises'
-      //   }
-      // },
       // {
       //   $lookup: {
       //     from: noteLessonModel.NOTE_COLLECTION_NAME,

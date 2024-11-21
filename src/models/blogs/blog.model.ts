@@ -223,7 +223,6 @@ const reactions = catchAsyncErrors(async (blogId: string, userId: string, isLike
 
   return updateResult
 })
-
 export const blogModel = {
   BLOG_COLLECTION_NAME,
   BLOG_COLLECTION_SCHEMA,

@@ -6,6 +6,8 @@ import { JwtProvider } from '~/providers/jwtProvider'
 import { ObjectId } from 'mongodb'
 import { enrollModel } from './enroll.model'
 import { catchAsyncErrors } from '~/middlewares/catchAsyncErrors'
+import ApiError from '~/utils/ApiError'
+import { StatusCodes } from 'http-status-codes'
 
 const USER_COLLECTION_NAME = 'users'
 
@@ -120,7 +122,7 @@ const getAll = async () => {
     throw new Error(error)
   }
 }
-const resetPassword = catchAsyncErrors(async (idUser: string, reqBody: any) => {
+const changePassword = catchAsyncErrors(async (idUser: string, reqBody: any) => {
   const { currentPassword, newPassword, confirmPassword } = reqBody
   if (!currentPassword) {
     throw new Error('Missing current password value!')
@@ -169,6 +171,20 @@ const updateInfo = catchAsyncErrors(async (userId: string, reqBody: any) => {
   return result
 })
 
+const updatePassword = async (email: string, newPassword: string) => {
+  const hashedPassword = await bcrypt.hash(newPassword, 10) // '10' là số lượng rounds (bạn có thể thay đổi)
+
+  const result = await GET_DB()
+    .collection(userModel.USER_COLLECTION_NAME)
+    .updateOne({ email: email }, { $set: { password: hashedPassword } })
+
+  if (result.matchedCount === 0) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Không tìm thấy người dùng để cập nhật mật khẩu.')
+  }
+
+  return result
+}
+
 export const userModel = {
   USER_COLLECTION_NAME,
   USER_COLLECTION_SCHEMA,
@@ -177,8 +193,9 @@ export const userModel = {
   emailCheckedBeforeRegister,
   getDetail,
   getAll,
-  resetPassword,
+  changePassword,
   uploadAvatar,
   updateInfo,
-  findOneById
+  findOneById,
+  updatePassword
 }

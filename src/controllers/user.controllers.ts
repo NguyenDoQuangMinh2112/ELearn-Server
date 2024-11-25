@@ -100,9 +100,9 @@ const getDetail = catchAsync(async (req: Request, res: Response) => {
   }
 })
 
-const resetPassword = catchAsync(async (req: Request, res: Response) => {
+const changePassword = catchAsync(async (req: Request, res: Response) => {
   const idUser = req.jwtDecoded?.id
-  const updatedUser = await userServices.resetPassword(String(idUser), req.body)
+  const updatedUser = await userServices.changePassword(String(idUser), req.body)
   res.status(StatusCodes.OK).json(updatedUser)
 })
 
@@ -116,6 +116,24 @@ const uploadAvatar = catchAsync(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(updatedAvatarUser)
 })
 
+const forgotPassword = catchAsync(async (req: Request, res: Response) => {
+  const { email } = req.body
+  const user = await userServices.forgotPassword(email)
+  res.status(StatusCodes.OK).json(user)
+})
+
+const verifyResetToken = catchAsync(async (req: Request, res: Response) => {
+  const { code, email } = req.body
+  const result = await userServices.verifyResetToken(email, code)
+  res.status(StatusCodes.CREATED).json(result)
+})
+
+const resetPassword = catchAsync(async (req: Request, res: Response) => {
+  const { email, newPasswordReset, confirmPasswordReset } = req.body
+  const result = await userServices.resetPassword(email, newPasswordReset, confirmPasswordReset)
+  res.status(StatusCodes.OK).json(result)
+})
+
 export const userController = {
   register,
   verifyCodeController,
@@ -126,6 +144,9 @@ export const userController = {
   getAlls,
   emailCheckedBeforeRegister,
   getDetail,
-  resetPassword,
-  uploadAvatar
+  changePassword,
+  uploadAvatar,
+  forgotPassword,
+  verifyResetToken,
+  resetPassword
 }

@@ -4,9 +4,10 @@ import { sendVerificationEmail } from '~/utils/email'
 import crypto from 'crypto'
 import { GET_DB } from '~/configs/connectDB'
 import { StatusCodes } from 'http-status-codes'
-import { ObjectId } from 'mongodb'
 import ApiError from '~/utils/ApiError'
 const temporaryStorage: { [key: string]: { data: ReqBodyRegister; code: string } } = {}
+
+const temporaryResetTokens: { [key: string]: string } = {}
 
 const register = async (reqBody: ReqBodyRegister) => {
   const existingUser = await GET_DB().collection(userModel.USER_COLLECTION_NAME).findOne({ email: reqBody.email })
@@ -59,8 +60,8 @@ const getAll = async () => {
 
   return { message: '', statusCode: StatusCodes.OK, data: users }
 }
-const resetPassword = async (idUser: string, reqBody: any) => {
-  const updatedUser = await userModel.resetPassword(idUser, reqBody)
+const changePassword = async (idUser: string, reqBody: any) => {
+  const updatedUser = await userModel.changePassword(idUser, reqBody)
 
   return {
     statusCode: StatusCodes.CREATED,
@@ -85,6 +86,57 @@ const updateInfo = async (userId: string, reqBody: any) => {
     data: updatedUser ? updatedUser : null
   }
 }
+
+const forgotPassword = async (email: string) => {
+  const existingUser = await GET_DB().collection(userModel.USER_COLLECTION_NAME).findOne({ email: email })
+  if (!existingUser) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'User not found.')
+  }
+
+  const resetToken = crypto.randomBytes(3).toString('hex').toLocaleUpperCase()
+
+  temporaryResetTokens[email] = resetToken
+
+  await sendVerificationEmail(email, resetToken)
+
+  return {
+    statusCode: StatusCodes.OK,
+    message: 'A password reset link has been sent to your email.'
+  }
+}
+const verifyResetToken = async (email: string, token: string) => {
+  const storedToken = temporaryResetTokens[email]
+
+  if (!storedToken) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid token.')
+  }
+
+  if (storedToken !== token) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid token.')
+  }
+
+  return {
+    statusCode: StatusCodes.OK,
+    message: 'Token is valid, you can now reset your password.'
+  }
+}
+
+// Reset the password
+const resetPassword = async (email: string, newPasswordReset: string, confirmPasswordReset: string) => {
+  if (newPasswordReset !== confirmPasswordReset) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Mật khẩu xác nhận không khớp.')
+  }
+  const existingUser = await GET_DB().collection(userModel.USER_COLLECTION_NAME).findOne({ email: email })
+  if (!existingUser) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Người dùng không tồn tại.')
+  }
+  await userModel.updatePassword(email, newPasswordReset)
+  return {
+    statusCode: StatusCodes.CREATED,
+    message: 'Mật khẩu đã được reset thành công.'
+  }
+}
+
 export const userServices = {
   register,
   verifyCode,
@@ -92,7 +144,10 @@ export const userServices = {
   emailCheckedBeforeRegister,
   getDetail,
   getAll,
-  resetPassword,
+  changePassword,
   uploadAvatar,
-  updateInfo
+  updateInfo,
+  forgotPassword,
+  verifyResetToken,
+  resetPassword
 }

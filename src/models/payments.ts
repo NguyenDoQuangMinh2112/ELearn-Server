@@ -2,8 +2,6 @@ import Joi from 'joi'
 import Stripe from 'stripe'
 import { catchAsyncErrors } from '~/middlewares/catchAsyncErrors'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
-import { courseModel } from './course.model'
-import { userModel } from './user.model'
 
 import { GET_DB } from '~/configs/connectDB'
 import { ObjectId } from 'mongodb'

@@ -7,7 +7,7 @@ const app = express()
 const server = http.createServer(app)
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:5173',
+    origin: process.env.FE_URL,
     methods: ['GET', 'POST']
   }
 })
@@ -24,12 +24,12 @@ const removeUser = (socketId: string) => {
   onlineUsers = onlineUsers.filter((user: any) => user.socketId !== socketId)
 }
 
-io.on('connection', (socket:any) => {
-  socket.on('newUser', (userId:string) => {
+io.on('connection', (socket: any) => {
+  socket.on('newUser', (userId: string) => {
     addNewUser(userId, socket.id)
   })
 
-  socket.on('newNotification', (notification:any) => {
+  socket.on('newNotification', (notification: any) => {
     const userSocket = getUser(notification.notification_for)
     if (userSocket) {
       // Gửi sự kiện chỉ tới người nhận

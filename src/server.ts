@@ -21,7 +21,7 @@ const START_SERVER = () => {
 
   app.use(
     cors({
-      origin: 'http://localhost:5173',
+      origin: process.env.FE_URL,
       methods: ['GET', 'PUT', 'POST', 'DELETE', 'PATCH'],
       credentials: true
     })

@@ -3,6 +3,7 @@ import { enrollController } from '~/controllers/enroll.controllers'
 
 const Router = express.Router()
 
-Router.route('/').post(enrollController.enrollCourse)
+Router.route('/create-checkout-session').post(enrollController.createCheckoutSession)
 
+// Paypal moethod
 export const enrollRoutes = Router

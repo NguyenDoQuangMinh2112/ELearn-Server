@@ -32,8 +32,16 @@ Router.route('/check-email').get(userController.emailCheckedBeforeRegister)
 Router.route('/detail/:id').get(authMiddleware.isAuthorized, userController.getDetail)
 
 // API Reset password
+Router.route('/change-password').post(authMiddleware.isAuthorized, userController.changePassword)
 
-Router.route('/reset-password').post(authMiddleware.isAuthorized, userController.resetPassword)
+// API forgot password
+Router.route('/forgot-password').post(userController.forgotPassword)
+
+// API Verify verifyResetToken
+Router.route('/verify-resetToken').post(userController.verifyResetToken)
+
+// API Reset password
+Router.route('/reset-password').post(userController.resetPassword)
 
 // API Change avatar
 Router.route('/change-avatar/:id').put(

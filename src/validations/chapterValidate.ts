@@ -27,6 +27,7 @@ const createQuestionExercise = async (req: Request, res: Response, next: NextFun
   const correctCondition = Joi.object({
     title: Joi.string().required().trim().strict(),
     description: Joi.string().required().trim().strict(),
+    order: Joi.number().optional(),
     chapterId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
     questions: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([])
   })

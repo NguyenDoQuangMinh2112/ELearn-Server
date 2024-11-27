@@ -75,6 +75,7 @@ const getDetails = catchAsyncErrors(async (id: any) => {
           description: 1,
           price: 1,
           noteVideo: 1,
+          thumbnail: 1,
           instructor_id: {
             fullName: '$instructor_id.fullName',
             email: '$instructor_id.email',

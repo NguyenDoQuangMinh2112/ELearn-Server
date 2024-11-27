@@ -11,6 +11,7 @@ const QUIZZES_COLLECTION_SCHEMA = Joi.object({
   title: Joi.string().required().trim().strict(),
   description: Joi.string().required().trim().strict(),
   chapterId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
+  order: Joi.number().optional(),
   questions: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
   createdAt: Joi.date().timestamp('javascript').default(Date.now),
   updatedAt: Joi.date().timestamp('javascript').default(null),

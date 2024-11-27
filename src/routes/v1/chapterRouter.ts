@@ -15,4 +15,6 @@ Router.route('/create-answer-exercise').post(
 
 Router.route('/').get(chapterController.getAll)
 
+Router.route('/:courseId/').get(chapterController.getAllChapterByCourseId)
+
 export const chapterRoutes = Router

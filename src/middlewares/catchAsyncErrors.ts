@@ -5,7 +5,7 @@ export const catchAsyncErrors =
     try {
       return await theFunc(...arg)
     } catch (err: any) {
-      return { error: err.message }
+      throw new Error(err.message)
     }
   }
 

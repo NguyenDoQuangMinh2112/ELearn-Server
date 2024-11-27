@@ -6,6 +6,7 @@ import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 import { chapterModel } from './chapter.model'
 import { courseModel } from './course.model'
 import { catchAsyncErrors } from '~/middlewares/catchAsyncErrors'
+import { noteLessonModel } from './noteLesson.model'
 
 const LESSON_COLLECTION_NAME = 'lessons'
 
@@ -62,18 +63,10 @@ const getDetails = catchAsyncErrors(async (id: any) => {
       },
       {
         $lookup: {
-          from: courseModel.COURSE_COLLECTION_NAME,
-          localField: 'courseId',
-          foreignField: '_id',
-          as: 'courseId'
-        }
-      },
-      {
-        $lookup: {
-          from: chapterModel.CHAPTER_COLLECTION_NAME,
-          localField: 'chapter_id',
-          foreignField: '_id',
-          as: 'chapter_id'
+          from: noteLessonModel.NOTE_COLLECTION_NAME,
+          localField: '_id',
+          foreignField: 'lesson_id',
+          as: 'noteVideo'
         }
       }
     ])

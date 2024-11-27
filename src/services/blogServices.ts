@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes'
 import { blogInterface } from '~/interfaces/blog.interface'
 import { blogModel } from '~/models/blogs/blog.model'
 import { notificationModel } from '~/models/blogs/notification.model'
+import { getUser, io } from '~/sockets/socket'
 import ApiError from '~/utils/ApiError'
 const slugify = require('slugify')
 
@@ -53,7 +54,13 @@ const reactions = async (blogId: string, userId: string, isLiked: boolean) => {
       user: userId,
       createdAt: Date.now()
     }
-    await notificationModel.create(likeNotification)
+    const notification = await notificationModel.create(likeNotification)
+    const result = await notificationModel.findOneById(notification.insertedId)
+    const detailNotification = await notificationModel.getDetail(result._id)
+    const userSocket = getUser(String(detailNotification.notification_for._id))
+    if (userSocket) {
+      io.to(userSocket.socketId).emit('newNotification', detailNotification)
+    }
     return { statusCode: StatusCodes.CREATED, data: { like_by_user: true } }
   } else {
     await notificationModel.findOneAndDelete(userId, 'like', blogId)

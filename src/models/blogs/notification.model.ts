@@ -4,6 +4,7 @@ import { GET_DB } from '~/configs/connectDB'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 import { userModel } from '../user.model'
 import { blogModel } from './blog.model'
+import { catchAsyncErrors } from '~/middlewares/catchAsyncErrors'
 const NOTIFICATION_COLLECTION_NAME = 'notifications'
 const NOTIFICATION_COLLECTION_SCHEMA = Joi.object({
   type: Joi.string().valid('like', 'comment', 'reply').required(),
@@ -253,6 +254,26 @@ const getDetail = async (notificationId: string) => {
   return result[0] || {}
 }
 
+const markAll = catchAsyncErrors(async (userId: string) => {
+  const result = await GET_DB()
+    .collection(NOTIFICATION_COLLECTION_NAME)
+    .updateMany({ notification_for: new ObjectId(userId) }, { $set: { seen: true } })
+
+  return result
+})
+
+const markAsSeen = catchAsyncErrors(async (id: string) => {
+  const result = await GET_DB()
+    .collection(NOTIFICATION_COLLECTION_NAME)
+    .updateOne({ _id: new ObjectId(id) }, { $set: { seen: true } })
+
+  if (result.matchedCount === 0) {
+    throw new Error('Notification not found')
+  }
+
+  return result
+})
+
 export const notificationModel = {
   NOTIFICATION_COLLECTION_NAME,
   NOTIFICATION_COLLECTION_SCHEMA,
@@ -261,5 +282,7 @@ export const notificationModel = {
   checkNotificationExists,
   findOneAndDelete,
   getAll,
-  getDetail
+  getDetail,
+  markAll,
+  markAsSeen
 }

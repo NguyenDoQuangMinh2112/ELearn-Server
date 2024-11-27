@@ -4,6 +4,8 @@ import { GET_DB } from '~/configs/connectDB'
 import { ChapterRequestBody } from '~/interfaces/chapter.interface'
 import { catchAsyncErrors } from '~/middlewares/catchAsyncErrors'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
+import { lessonModel } from './lesson.model'
+import { quizzesModle } from './quizs/quizzes.model'
 
 const CHAPTER_COLLECTION_NAME = 'chapters'
 
@@ -57,11 +59,42 @@ const getAll = catchAsyncErrors(async () => {
   return result
 })
 
+const getAllChapterByCourseId = catchAsyncErrors(async (courseId: any) => {
+  const result = await GET_DB()
+    .collection(CHAPTER_COLLECTION_NAME)
+    .aggregate([
+      {
+        $match: {
+          courseId: new ObjectId(courseId)
+        }
+      },
+      {
+        $lookup: {
+          from: lessonModel.LESSON_COLLECTION_NAME,
+          localField: '_id',
+          foreignField: 'chapter_id',
+          as: 'lessons'
+        }
+      },
+      {
+        $lookup: {
+          from: quizzesModle.QUIZZES_COLLECTION_NAME,
+          localField: '_id',
+          foreignField: 'chapterId',
+          as: 'exercises'
+        }
+      }
+    ])
+    .toArray()
+  return result
+})
+
 export const chapterModel = {
   CHAPTER_COLLECTION_NAME,
   CHAPTER_COLLECTION_SCHEMA,
   create,
   findOneById,
   pushLessonIdToChapter,
-  getAll
+  getAll,
+  getAllChapterByCourseId
 }

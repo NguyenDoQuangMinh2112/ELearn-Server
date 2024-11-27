@@ -35,6 +35,7 @@ Router.route('/detail/:id').get(authMiddleware.isAuthorized, userController.getD
 
 Router.route('/reset-password').post(authMiddleware.isAuthorized, userController.resetPassword)
 
+// API Change avatar
 Router.route('/change-avatar/:id').put(
   authMiddleware.isAuthorized,
   uploadCloud.single('avatar_url'),

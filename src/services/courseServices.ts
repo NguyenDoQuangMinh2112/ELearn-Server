@@ -25,19 +25,19 @@ const getDetails = async (courseId: any) => {
       (lesson: any) => lesson.chapter_id.toString() === chapter._id.toString()
     )
 
-    chapter.lessons.forEach((lesson: any) => {
-      lesson.noteVideo = cloneCourse?.noteLesson?.filter((noteLesson: any) => {
-        return lesson._id.toString() === noteLesson.lesson_id.toString()
-      })
-    })
+    // chapter.lessons.forEach((lesson: any) => {
+    //   lesson.noteVideo = cloneCourse?.noteLesson?.filter((noteLesson: any) => {
+    //     return lesson._id.toString() === noteLesson.lesson_id.toString()
+    //   })
+    // })
 
-    chapter.exercises = cloneCourse?.exercises?.filter(
-      (exercise: any) => exercise.chapterId.toString() === chapter._id.toString()
-    )
+    // chapter.exercises = cloneCourse?.exercises?.filter(
+    //   (exercise: any) => exercise.chapterId.toString() === chapter._id.toString()
+    // )
   })
-  delete cloneCourse.noteLesson
   delete cloneCourse.lessons
-  delete cloneCourse.exercises
+  // delete cloneCourse.noteLesson
+  // delete cloneCourse.exercises
 
   return { statusCode: StatusCodes.OK, data: cloneCourse }
 }

@@ -64,5 +64,9 @@ const createAnswerExercise = async (reqBody: any) => {
     }
   }
 }
+const getAllChapterByCourseId = async (courseId: any) => {
+  const chapters = await chapterModel.getAllChapterByCourseId(courseId)
 
-export const chapterServices = { create, getAll, createQuestionExercise, createAnswerExercise }
+  return { statusCode: StatusCodes.OK, data: chapters }
+}
+export const chapterServices = { create, getAll, createQuestionExercise, createAnswerExercise, getAllChapterByCourseId }

@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb'
 import { GET_DB } from '~/configs/connectDB'
 import { catchAsyncErrors } from '~/middlewares/catchAsyncErrors'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
+import { quizQuestionModle } from './quiz_questions.model'
 
 const QUIZZES_COLLECTION_NAME = 'quizzes'
 
@@ -54,10 +55,30 @@ const pushQuestionIds = catchAsyncErrors(async (answerExercise: any) => {
   return result
 })
 
+const getDetail = catchAsyncErrors(async (id: string) => {
+  const result = await GET_DB()
+    .collection(QUIZZES_COLLECTION_NAME)
+    .aggregate([
+      { $match: { _id: new ObjectId(id) } },
+      {
+        $lookup: {
+          from: quizQuestionModle.QUIZ_QUESTION_COLLECTION_NAME,
+          localField: '_id',
+          foreignField: 'quizId',
+          as: 'questions'
+        }
+      }
+    ])
+    .toArray()
+
+  return result[0] || {}
+})
+
 export const quizzesModle = {
   QUIZZES_COLLECTION_NAME,
   QUIZZES_COLLECTION_SCHEMA,
   createQuestionExercise,
   findOneById,
-  pushQuestionIds
+  pushQuestionIds,
+  getDetail
 }

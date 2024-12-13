@@ -134,6 +134,14 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(result)
 })
 
+const getListStudent = catchAsync(async (req: Request, res: Response) => {
+  const page = parseInt(req.query.page as string) || 1
+  const limit = parseInt(req.query.limit as string) || 10
+  const userId = req.jwtDecoded?.id as string
+  const students = await userServices.getListStudent(userId, page, limit)
+  res.status(StatusCodes.OK).json(students)
+})
+
 export const userController = {
   register,
   verifyCodeController,
@@ -148,5 +156,6 @@ export const userController = {
   uploadAvatar,
   forgotPassword,
   verifyResetToken,
-  resetPassword
+  resetPassword,
+  getListStudent
 }

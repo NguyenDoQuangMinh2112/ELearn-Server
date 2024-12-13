@@ -124,6 +124,7 @@ const getAll = catchAsyncErrors(async (page: number, limit: number) => {
           'author._id': 1
         }
       },
+      { $sort: { views: -1 } },
       { $skip: skip },
       { $limit: limit }
     ])
@@ -223,6 +224,47 @@ const reactions = catchAsyncErrors(async (blogId: string, userId: string, isLike
 
   return updateResult
 })
+
+const editBlog = catchAsyncErrors(async (id: string, reqBody: any, banner: string, userId: string) => {
+  const blogPost = await GET_DB()
+    .collection(BLOG_COLLECTION_NAME)
+    .findOne({ _id: new ObjectId(id) })
+
+  if (!blogPost) {
+    throw new Error('Bài viết không tồn tại')
+  }
+
+  if (blogPost.author.toString() !== userId) {
+    throw new Error('Bạn không có quyền sửa bài viết này')
+  }
+
+  const result = await GET_DB()
+    .collection(BLOG_COLLECTION_NAME)
+    .findOneAndUpdate({ _id: new ObjectId(id) }, { $set: reqBody }, { returnDocument: 'after' })
+
+  return result
+})
+
+const deleteBlog = catchAsyncErrors(async (id: string, userId: string) => {
+  const blogPost = await GET_DB()
+    .collection(BLOG_COLLECTION_NAME)
+    .findOne({ _id: new ObjectId(id) })
+
+  if (!blogPost) {
+    throw new Error('Bài viết không tồn tại')
+  }
+
+  if (blogPost.author.toString() !== userId) {
+    throw new Error('Bạn không có quyền xóa bài viết này')
+  }
+
+  const result = await GET_DB()
+    .collection(BLOG_COLLECTION_NAME)
+    .findOneAndDelete({ _id: new ObjectId(id) }, { returnDocument: 'after' })
+
+  return result
+})
+
 export const blogModel = {
   BLOG_COLLECTION_NAME,
   BLOG_COLLECTION_SCHEMA,
@@ -232,5 +274,7 @@ export const blogModel = {
   getDetails,
   findOneAndUpdate,
   reactions,
-  countBlogs
+  countBlogs,
+  editBlog,
+  deleteBlog
 }

@@ -22,8 +22,8 @@ const create = async (reqBody: ChapterRequestBody) => {
   return { statusCode: StatusCodes.CREATED, message: 'Tạo chương học thành công !', data: result }
 }
 
-const getAll = async () => {
-  const chapters = await chapterModel.getAll()
+const getAll = async (cId: string) => {
+  const chapters = await chapterModel.getAll(cId)
 
   if (!chapters) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Chapter not found')
@@ -69,4 +69,17 @@ const getAllChapterByCourseId = async (courseId: any) => {
 
   return { statusCode: StatusCodes.OK, data: chapters }
 }
-export const chapterServices = { create, getAll, createQuestionExercise, createAnswerExercise, getAllChapterByCourseId }
+
+const getDetailAnswer = async (id: any) => {
+  const answer = await quizQuestionModle.getDetailAnswer(id)
+  return { statusCode: StatusCodes.OK, data: answer }
+}
+
+export const chapterServices = {
+  create,
+  getAll,
+  createQuestionExercise,
+  createAnswerExercise,
+  getAllChapterByCourseId,
+  getDetailAnswer
+}

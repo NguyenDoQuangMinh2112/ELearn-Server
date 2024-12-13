@@ -1,4 +1,4 @@
-import Joi from 'joi'
+import Joi, { required } from 'joi'
 import { ObjectId } from 'mongodb'
 import { GET_DB } from '~/configs/connectDB'
 import { CourseRequestBody } from '~/interfaces/course.interface'
@@ -76,6 +76,7 @@ const getDetails = catchAsyncErrors(async (id: any) => {
           price: 1,
           noteVideo: 1,
           thumbnail: 1,
+          required: 1,
           instructor_id: {
             fullName: '$instructor_id.fullName',
             email: '$instructor_id.email',
@@ -204,6 +205,125 @@ const search = catchAsyncErrors(async (keyword: string) => {
     blogs
   }
 })
+
+const getAllCoursesByTeacher = catchAsyncErrors(async (userId: string) => {
+  const result = await GET_DB()
+    .collection(COURSE_COLLECTION_NAME)
+    .find({ instructor_id: new ObjectId(userId) })
+    .toArray()
+
+  return result
+})
+
+const editCourseDetail = catchAsyncErrors(async (id: string, reqBody: any, thumbnail?: string) => {
+  const blogPost = await GET_DB()
+    .collection(COURSE_COLLECTION_NAME)
+    .findOne({ _id: new ObjectId(id) })
+
+  if (!blogPost) {
+    throw new Error('Bài viết không tồn tại')
+  }
+
+  const updatedThumbnail = thumbnail || blogPost.thumbnail
+
+  const result = await GET_DB()
+    .collection(COURSE_COLLECTION_NAME)
+    .findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      { $set: { ...reqBody, thumbnail: updatedThumbnail } },
+      { returnDocument: 'after' }
+    )
+
+  return result.value
+})
+
+const stats = catchAsyncErrors(async (instructorId: string) => {
+  // Tổng số khóa học mà instructor đã đăng
+  const coursesCount = await GET_DB()
+    .collection(COURSE_COLLECTION_NAME)
+    .countDocuments({
+      instructor_id: new ObjectId(instructorId)
+    })
+
+  // Lấy danh sách khóa học của instructor
+  const courses = await GET_DB()
+    .collection(COURSE_COLLECTION_NAME)
+    .find({
+      instructor_id: new ObjectId(instructorId)
+    })
+    .project({ _id: 1 })
+    .toArray()
+  const courseIds = courses.map((course: any) => course._id)
+
+  // Tổng số user đã mua khóa học của instructor
+  const uniqueUsers = await GET_DB()
+    .collection('enrolls')
+    .aggregate([
+      { $match: { courseId: { $in: courseIds } } },
+      { $group: { _id: '$userId' } },
+      { $project: { _id: 0, userId: '$_id' } }
+    ])
+    .toArray()
+  const usersCount = uniqueUsers.length
+
+  // Số user mới đã tham gia khóa học của instructor trong tháng
+  const firstDayOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime()
+  const newUsers = await GET_DB()
+    .collection('enrolls')
+    .aggregate([
+      {
+        $match: {
+          courseId: { $in: courseIds },
+          createdAt: { $gte: firstDayOfMonth }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userDetails'
+        }
+      },
+      { $unwind: '$userDetails' },
+      {
+        $group: {
+          _id: '$userId',
+          joinedAt: { $first: '$createdAt' }
+        }
+      }
+    ])
+    .toArray()
+
+  // Tổng doanh thu
+  const revenue = await GET_DB()
+    .collection('payments')
+    .aggregate([
+      {
+        $match: { payment_status: 'success' }
+      },
+      {
+        $addFields: {
+          amountAsNumber: { $toDouble: '$amount' }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: '$amountAsNumber' }
+        }
+      }
+    ])
+    .toArray()
+
+  return {
+    courses: coursesCount,
+    revenue: revenue[0]?.totalRevenue || 0,
+    totalUsers: usersCount,
+    newUsersThisMonth: newUsers.length
+  }
+})
+
 export const courseModel = {
   COURSE_COLLECTION_NAME,
   COURSE_COLLECTION_SCHEMA,
@@ -212,5 +332,8 @@ export const courseModel = {
   getDetails,
   getAll,
   pushChapterIds,
-  search
+  search,
+  getAllCoursesByTeacher,
+  editCourseDetail,
+  stats
 }

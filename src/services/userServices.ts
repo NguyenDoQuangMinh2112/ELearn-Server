@@ -137,6 +137,11 @@ const resetPassword = async (email: string, newPasswordReset: string, confirmPas
   }
 }
 
+const getListStudent = async (userId: string, page: number, limit: number) => {
+  const students = await userModel.getListStudent(userId, page, limit)
+  return { statusCode: StatusCodes.OK, data: students }
+}
+
 export const userServices = {
   register,
   verifyCode,
@@ -149,5 +154,6 @@ export const userServices = {
   updateInfo,
   forgotPassword,
   verifyResetToken,
-  resetPassword
+  resetPassword,
+  getListStudent
 }

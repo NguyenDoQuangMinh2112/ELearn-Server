@@ -13,7 +13,9 @@ Router.route('/create-answer-exercise').post(
   chapterController.createAnswerExercise
 )
 
-Router.route('/').get(chapterController.getAll)
+Router.route('/answer/:id').get(chapterController.getDetailAnswer)
+
+Router.route('/list/:cId').get(chapterController.getAll)
 
 Router.route('/:courseId/').get(chapterController.getAllChapterByCourseId)
 

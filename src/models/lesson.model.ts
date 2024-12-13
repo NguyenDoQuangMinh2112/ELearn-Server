@@ -51,7 +51,7 @@ const create = catchAsyncErrors(async (data: any) => {
 
   return insertedLesson
 })
-const getDetails = catchAsyncErrors(async (id: any) => {
+const getDetails = catchAsyncErrors(async (id: any, userId: string) => {
   const result = await GET_DB()
     .collection(LESSON_COLLECTION_NAME)
     .aggregate([
@@ -64,8 +64,16 @@ const getDetails = catchAsyncErrors(async (id: any) => {
       {
         $lookup: {
           from: noteLessonModel.NOTE_COLLECTION_NAME,
-          localField: '_id',
-          foreignField: 'lesson_id',
+          let: { lessonId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [{ $eq: ['$lesson_id', '$$lessonId'] }, { $eq: ['$user_id', new ObjectId(userId)] }]
+                }
+              }
+            }
+          ],
           as: 'noteVideo'
         }
       }
@@ -93,6 +101,19 @@ const pushNoteLessonIds = catchAsyncErrors(async (noteLesson: any) => {
   return result
 })
 
+const createOption2 = catchAsyncErrors(async (data: any) => {
+  const validateData = await validateBeforeCreate(data)
+  const addNewLesson = {
+    ...validateData,
+    courseId: new ObjectId(validateData.courseId),
+    chapter_id: new ObjectId(validateData.chapter_id)
+  }
+
+  const result = await GET_DB().collection(LESSON_COLLECTION_NAME).insertOne(addNewLesson)
+
+  return result
+})
+
 export const lessonModel = {
   LESSON_COLLECTION_NAME,
   LESSON_COLLECTION_SCHEMA,
@@ -100,5 +121,6 @@ export const lessonModel = {
   findOneById,
   getDetails,
   update,
-  pushNoteLessonIds
+  pushNoteLessonIds,
+  createOption2
 }

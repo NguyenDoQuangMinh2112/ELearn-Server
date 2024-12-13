@@ -54,8 +54,11 @@ const pushLessonIdToChapter = catchAsyncErrors(async (lesson: any) => {
   return result
 })
 
-const getAll = catchAsyncErrors(async () => {
-  const result = await GET_DB().collection(CHAPTER_COLLECTION_NAME).find({}).toArray()
+const getAll = catchAsyncErrors(async (cId: string) => {
+  const result = await GET_DB()
+    .collection(CHAPTER_COLLECTION_NAME)
+    .find({ courseId: new ObjectId(cId) })
+    .toArray()
   return result
 })
 

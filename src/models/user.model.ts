@@ -14,7 +14,7 @@ const USER_COLLECTION_NAME = 'users'
 const USER_COLLECTION_SCHEMA = Joi.object({
   email: Joi.string()
     .required()
-    .email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } }),
+    .email({ minDomainSegments: 2, tlds: { allow: ['com', 'net', 'vn'] } }),
   password: Joi.string().required().min(5).trim().strict(),
   fullName: Joi.string().required().min(5).trim().strict(),
   role: Joi.string().valid('admin', 'user', 'teacher').default('user'),
@@ -185,6 +185,54 @@ const updatePassword = async (email: string, newPassword: string) => {
   return result
 }
 
+const getListStudent = catchAsyncErrors(async (userId: string, page: number, limit: number) => {
+  const courses = await GET_DB()
+    .collection('courses')
+    .find({
+      instructor_id: new ObjectId(userId),
+      _destroy: false
+    })
+    .toArray()
+
+  if (courses.length === 0) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'No courses found for this instructor')
+  }
+  const courseIds = courses.map((course: any) => course._id)
+  const enrollments = await GET_DB()
+    .collection('enrolls')
+    .aggregate([
+      {
+        $match: {
+          courseId: { $in: courseIds.map((id: any) => new ObjectId(id)) },
+          _destroy: false
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userInfo'
+        }
+      },
+      {
+        $unwind: '$userInfo'
+      },
+      {
+        $project: {
+          _id: 0,
+          courseId: 1,
+          userId: 1,
+          'userInfo.fullName': 1,
+          'userInfo.email': 1,
+          'userInfo.avatar_url': 1
+        }
+      }
+    ])
+    .toArray()
+  return enrollments
+})
+
 export const userModel = {
   USER_COLLECTION_NAME,
   USER_COLLECTION_SCHEMA,
@@ -197,5 +245,6 @@ export const userModel = {
   uploadAvatar,
   updateInfo,
   findOneById,
-  updatePassword
+  updatePassword,
+  getListStudent
 }

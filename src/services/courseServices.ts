@@ -24,20 +24,8 @@ const getDetails = async (courseId: any) => {
     chapter.lessons = cloneCourse.lessons.filter(
       (lesson: any) => lesson.chapter_id.toString() === chapter._id.toString()
     )
-
-    // chapter.lessons.forEach((lesson: any) => {
-    //   lesson.noteVideo = cloneCourse?.noteLesson?.filter((noteLesson: any) => {
-    //     return lesson._id.toString() === noteLesson.lesson_id.toString()
-    //   })
-    // })
-
-    // chapter.exercises = cloneCourse?.exercises?.filter(
-    //   (exercise: any) => exercise.chapterId.toString() === chapter._id.toString()
-    // )
   })
   delete cloneCourse.lessons
-  // delete cloneCourse.noteLesson
-  // delete cloneCourse.exercises
 
   return { statusCode: StatusCodes.OK, data: cloneCourse }
 }
@@ -55,4 +43,26 @@ const search = async (keyword: string) => {
 
   return { statusCode: StatusCodes.OK, data: searchData }
 }
-export const courseServices = { create, getDetails, getAll, search }
+
+const getAllCoursesByTeacher = async (userId: string) => {
+  const course = await courseModel.getAllCoursesByTeacher(userId)
+
+  if (!course) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Course not found')
+  }
+
+  return { statusCode: StatusCodes.OK, message: 'Get all courses successfully', data: course }
+}
+
+const editCourseDetail = async (id: string, reqBody: any, thumbnail: string) => {
+  const updateCourse = await courseModel.editCourseDetail(id, reqBody, thumbnail)
+
+  return { statusCode: StatusCodes.OK, data: updateCourse, message: 'Update blog successfully!' }
+}
+
+const stats = async (instructorId: string) => {
+  const data = await courseModel.stats(instructorId)
+  return { statusCode: StatusCodes.OK, data: data }
+}
+
+export const courseServices = { create, getDetails, getAll, search, getAllCoursesByTeacher, editCourseDetail, stats }

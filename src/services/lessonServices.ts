@@ -49,8 +49,8 @@ const uploadVideo = async (auth: OAuth2Client, filePath: string, metadata: Video
 
   return res.data
 }
-const getDetails = async (lessonId: any) => {
-  const lesson = await lessonModel.getDetails(lessonId)
+const getDetails = async (lessonId: any, userId: string) => {
+  const lesson = await lessonModel.getDetails(lessonId, userId)
   return { statusCode: StatusCodes.OK, data: lesson }
 }
 const update = async (id: any, reqBody: any) => {
@@ -66,13 +66,13 @@ const update = async (id: any, reqBody: any) => {
 
   return { statusCode: StatusCodes.OK, message: 'Update lesson succesfully !', data: updatedLesson }
 }
-const addNoteLesson = async (reqBody: any) => {
+const addNoteLesson = async (reqBody: any, userId: string) => {
   const data = {
     ...reqBody,
     createdAt: Date.now()
   }
 
-  const createdNoteLesson = await noteLessonModel.addNoteLesson(data)
+  const createdNoteLesson = await noteLessonModel.addNoteLesson(data, userId)
   const result = await noteLessonModel.findOneById(createdNoteLesson.insertedId)
   if (result) {
     await lessonModel.pushNoteLessonIds(result)
@@ -85,8 +85,8 @@ const addNoteLesson = async (reqBody: any) => {
   return { statusCode: StatusCodes.CREATED, message: 'Create note lesson success!', data: result }
 }
 
-const getNoteLessonByID = async (lessonID: string) => {
-  const noteLesson = await noteLessonModel.getNoteLessonByID(lessonID)
+const getNoteLessonByID = async (lessonID: string, userId: string) => {
+  const noteLesson = await noteLessonModel.getNoteLessonByID(lessonID, userId)
   return { statusCode: StatusCodes.OK, data: noteLesson }
 }
 const updateNoteLesson = async (userId: string, reqBody: any) => {
@@ -102,4 +102,30 @@ const updateNoteLesson = async (userId: string, reqBody: any) => {
     data: updatedNote ? updatedNote : null
   }
 }
-export const lessonServices = { uploadVideo, getDetails, update, addNoteLesson, getNoteLessonByID, updateNoteLesson }
+
+const createOption2 = async (reqBody: any) => {
+  const data = {
+    ...reqBody,
+    createdAt: Date.now()
+  }
+
+  const createdLesson = await lessonModel.createOption2(data)
+  const insertedLesson = await lessonModel.findOneById(createdLesson.insertedId)
+  if (insertedLesson) {
+    await chapterModel.pushLessonIdToChapter(insertedLesson)
+  }
+  return {
+    statusCode: insertedLesson ? StatusCodes.OK : StatusCodes.UNPROCESSABLE_ENTITY,
+    message: insertedLesson ? 'Create new lesson success!' : 'Something went wrong!',
+    data: insertedLesson ? insertedLesson : null
+  }
+}
+export const lessonServices = {
+  uploadVideo,
+  getDetails,
+  update,
+  addNoteLesson,
+  getNoteLessonByID,
+  updateNoteLesson,
+  createOption2
+}

@@ -30,4 +30,33 @@ const search = catchAsync(async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json(searchData)
 })
 
-export const courseController = { create, getDetailCourse, getAllCourses, search }
+const getAllCoursesByTeacher = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.jwtDecoded?.id as string
+  const course = await courseServices.getAllCoursesByTeacher(userId)
+  res.status(StatusCodes.OK).json(course)
+})
+
+const editCourseDetail = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params
+  const { file, body } = req
+  const thumbnail = file?.path || ''
+
+  const course = await courseServices.editCourseDetail(id, body, thumbnail)
+  res.status(StatusCodes.OK).json(course)
+})
+
+const stats = catchAsync(async (req: Request, res: Response) => {
+  const instructorId = req.jwtDecoded?.id as string
+  const stats = await courseServices.stats(instructorId)
+  res.status(StatusCodes.OK).json(stats)
+})
+
+export const courseController = {
+  create,
+  getDetailCourse,
+  getAllCourses,
+  search,
+  getAllCoursesByTeacher,
+  editCourseDetail,
+  stats
+}

@@ -8,7 +8,8 @@ const create = catchAsync(async (req: Request, res: Response) => {
   res.status(StatusCodes.CREATED).json(createNewChapter)
 })
 const getAll = catchAsync(async (req: Request, res: Response) => {
-  const chapter = await chapterServices.getAll()
+  const { cId } = req.params
+  const chapter = await chapterServices.getAll(cId)
   res.status(StatusCodes.OK).json(chapter)
 })
 const createQuestionExercise = catchAsync(async (req: Request, res: Response) => {
@@ -27,10 +28,17 @@ const getAllChapterByCourseId = catchAsync(async (req: Request, res: Response) =
 
   res.status(StatusCodes.OK).json(chapters)
 })
+
+const getDetailAnswer = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params
+  const answer = await chapterServices.getDetailAnswer(id)
+  res.status(StatusCodes.OK).json(answer)
+})
 export const chapterController = {
   create,
   getAll,
   createQuestionExercise,
   createAnswerExercise,
-  getAllChapterByCourseId
+  getAllChapterByCourseId,
+  getDetailAnswer
 }

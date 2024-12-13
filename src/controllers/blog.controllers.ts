@@ -36,4 +36,22 @@ const islikedByUser = catchAsync(async (req: Request, res: Response) => {
   res.status(StatusCodes.CREATED).json(createLikedByUser)
 })
 
-export const blogController = { create, getAll, getDetails, reactions, islikedByUser }
+const editBlog = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params
+  const userId = req.jwtDecoded?.id as string
+  const { file, body } = req
+  const banner = file?.path || ''
+
+  const blog = await blogServices.editBlog(id, body, banner, userId)
+  res.status(StatusCodes.OK).json(blog)
+})
+
+const deleteBlog = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params
+  const userId = req.jwtDecoded?.id as string
+
+  const blog = await blogServices.deleteBlog(id, userId)
+  res.status(StatusCodes.OK).json(blog)
+})
+
+export const blogController = { create, getAll, getDetails, reactions, islikedByUser, editBlog, deleteBlog }

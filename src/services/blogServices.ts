@@ -73,4 +73,18 @@ const likeByUser = async (blogId: string, userId: string) => {
 
   return { statusCode: StatusCodes.OK, data: isLiked }
 }
-export const blogServices = { create, getAll, getDetails, reactions, likeByUser }
+
+const editBlog = async (id: string, reqBody: any, banner: string, userId: string) => {
+  const updatedBlog = await blogModel.editBlog(id, reqBody, banner, userId)
+
+  return { statusCode: StatusCodes.OK, data: updatedBlog, message: 'Update blog successfully!' }
+}
+
+const deleteBlog = async (id: string, userId: string) => {
+  const deletedBlog = await blogModel.deleteBlog(id, userId)
+  if (!deletedBlog) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Blog not found')
+  }
+  return { statusCode: StatusCodes.OK, message: 'Delete blog successfully!' }
+}
+export const blogServices = { create, getAll, getDetails, reactions, likeByUser, editBlog, deleteBlog }

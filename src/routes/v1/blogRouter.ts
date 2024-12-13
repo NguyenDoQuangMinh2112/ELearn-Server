@@ -11,7 +11,10 @@ Router.route('/reactions').post(authMiddleware.isAuthorized, blogController.reac
 
 Router.route('/isliked-by-user').post(authMiddleware.isAuthorized, blogController.islikedByUser)
 
-Router.route('/:id').get(blogController.getDetails)
+Router.route('/:id')
+  .get(blogController.getDetails)
+  .put(authMiddleware.isAuthorized, blogController.editBlog)
+  .delete(authMiddleware.isAuthorized, blogController.deleteBlog)
 
 Router.route('/create').post(
   authMiddleware.isAuthorized,

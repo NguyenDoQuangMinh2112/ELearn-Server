@@ -10,6 +10,7 @@ const NOTE_COLLECTION_NAME = 'noteLessons'
 const NOTE_COLLECTION_SCHEMA = Joi.object({
   course_id: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE).required(),
   chapter_id: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE).required(),
+  user_id: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE).required(),
   lesson_id: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE).required(),
   content: Joi.string().required().min(1).max(500).trim().strict(),
   time: Joi.string().required(),
@@ -28,24 +29,26 @@ const findOneById = catchAsyncErrors(async (id: any) => {
     })
   return result
 })
-const addNoteLesson = catchAsyncErrors(async (reqBody: any) => {
+const addNoteLesson = catchAsyncErrors(async (reqBody: any, userId: string) => {
   const validateData = await validateBeforeCreate(reqBody)
   const addNewNoteLesson = {
     ...validateData,
     course_id: new ObjectId(validateData.course_id),
     chapter_id: new ObjectId(validateData.chapter_id),
-    lesson_id: new ObjectId(validateData.lesson_id)
+    lesson_id: new ObjectId(validateData.lesson_id),
+    user_id: new ObjectId(userId)
   }
   const createdNoteLesson = await GET_DB().collection(NOTE_COLLECTION_NAME).insertOne(addNewNoteLesson)
   return createdNoteLesson
 })
-const getNoteLessonByID = catchAsyncErrors(async (lessonID: string) => {
+const getNoteLessonByID = catchAsyncErrors(async (lessonID: string, userId: string) => {
   const noteLesson = await GET_DB()
     .collection(NOTE_COLLECTION_NAME)
     .aggregate([
       {
         $match: {
-          lesson_id: new ObjectId(lessonID)
+          lesson_id: new ObjectId(lessonID),
+          user_id: new ObjectId(userId)
         }
       },
       {
@@ -78,12 +81,8 @@ const getNoteLessonByID = catchAsyncErrors(async (lessonID: string) => {
     }
   })
 
-  if (!noteLesson) {
-    throw new Error('Lesson not found')
-  }
   return noteLesson
 })
-
 const updateNoteLesson = catchAsyncErrors(async (noteLessonId: string, reqBody: any) => {
   const result = await GET_DB()
     .collection(NOTE_COLLECTION_NAME)

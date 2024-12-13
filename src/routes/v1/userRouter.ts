@@ -50,4 +50,5 @@ Router.route('/change-avatar/:id').put(
   userController.uploadAvatar
 )
 
+Router.route('/students').get(authMiddleware.isAuthorized, userController.getListStudent)
 export const userRoutes = Router

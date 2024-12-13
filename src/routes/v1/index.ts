@@ -11,6 +11,7 @@ import { blogRoutes } from './blogRouter'
 import { commentRoutes } from './commentRouter'
 import { notificationRouter } from './notificationRouter'
 import { exerciseRouter } from './exerciseRouter'
+import { dashboardRouter } from './dashboardRouter'
 
 // User API
 router.use('/users', userRoutes)
@@ -38,5 +39,8 @@ router.use('/notification', notificationRouter)
 
 // Exercise API
 router.use('/exercise', exerciseRouter)
+
+// Dashboard API
+router.use('/dashboard', dashboardRouter)
 
 export const APIs_V1 = router

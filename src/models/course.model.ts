@@ -296,29 +296,41 @@ const stats = catchAsyncErrors(async (instructorId: string) => {
     .toArray()
 
   // Tổng doanh thu
-  const revenue = await GET_DB()
+  const revenueData = await GET_DB()
     .collection('payments')
     .aggregate([
       {
         $match: { payment_status: 'success' }
       },
       {
+        // Chuyển đổi 'createdAt' từ timestamp (số) thành kiểu Date
         $addFields: {
-          amountAsNumber: { $toDouble: '$amount' }
+          createdAt: { $toDate: '$createdAt' }, // Chuyển 'createdAt' thành Date
+          amount: { $toDouble: '$amount' } // Chuyển 'amount' từ string thành number (double)
         }
       },
       {
         $group: {
-          _id: null,
-          totalRevenue: { $sum: '$amountAsNumber' }
+          _id: {
+            month: { $month: '$createdAt' }, // Trích xuất tháng từ 'createdAt'
+            year: { $year: '$createdAt' } // Trích xuất năm từ 'createdAt'
+          },
+          totalRevenue: { $sum: '$amount' } // Tính tổng doanh thu từ 'amount'
         }
+      },
+      {
+        $sort: { '_id.year': 1, '_id.month': 1 }
       }
     ])
     .toArray()
 
+  // Chuẩn bị dữ liệu trả về
+  const labels = revenueData.map((item: any) => `Month ${item._id.month}/${item._id.year}`)
+  const data = revenueData.map((item: any) => item.totalRevenue)
+
   return {
     courses: coursesCount,
-    revenue: revenue[0]?.totalRevenue || 0,
+    revenue: { labels, data },
     totalUsers: usersCount,
     newUsersThisMonth: newUsers.length
   }

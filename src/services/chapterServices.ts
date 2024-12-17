@@ -70,8 +70,8 @@ const getAllChapterByCourseId = async (courseId: any) => {
   return { statusCode: StatusCodes.OK, data: chapters }
 }
 
-const getDetailAnswer = async (id: any) => {
-  const answer = await quizQuestionModle.getDetailAnswer(id)
+const getDetailAnswer = async (quizId: string) => {
+  const answer = await quizzesModle.getDetailAnswer(quizId)
   return { statusCode: StatusCodes.OK, data: answer }
 }
 

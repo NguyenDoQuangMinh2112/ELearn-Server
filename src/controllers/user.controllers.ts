@@ -141,6 +141,15 @@ const getListStudent = catchAsync(async (req: Request, res: Response) => {
   const students = await userServices.getListStudent(userId, page, limit)
   res.status(StatusCodes.OK).json(students)
 })
+const getListTeacher = catchAsync(async (req: Request, res: Response) => {
+  const teachers = await userServices.getListTeacher()
+  res.status(StatusCodes.OK).json(teachers)
+})
+
+const createTeacher = catchAsync(async (req: Request, res: Response) => {
+  const teacher = await userServices.createTeacher(req.body)
+  res.status(StatusCodes.CREATED).json(teacher)
+})
 
 export const userController = {
   register,
@@ -157,5 +166,7 @@ export const userController = {
   forgotPassword,
   verifyResetToken,
   resetPassword,
-  getListStudent
+  getListStudent,
+  getListTeacher,
+  createTeacher
 }

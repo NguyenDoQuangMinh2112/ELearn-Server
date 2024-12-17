@@ -2,11 +2,22 @@ import express from 'express'
 import { ObjectId } from 'mongodb'
 import { GET_DB } from '~/configs/connectDB'
 import { courseController } from '~/controllers/course.controllers'
+import { userController } from '~/controllers/user.controllers'
 import { authMiddleware } from '~/middlewares/authMiddleware'
+import { userValidation } from '~/validations/userValidate'
 
 const Router = express.Router()
 
 Router.route('/stats').get(authMiddleware.isAuthorized, courseController.stats)
+
+Router.route('/admin/list-teachers').get(
+  authMiddleware.isAuthorized,
+  authMiddleware.isAdmin,
+  userController.getListTeacher
+)
+
+// API Create teacher
+Router.route('/create-teacher').post(userValidation.createTeacher, userController.createTeacher)
 
 Router.route('/revenue').get(async (req, res) => {
   try {
@@ -17,9 +28,19 @@ Router.route('/revenue').get(async (req, res) => {
           $match: { payment_status: 'success' }
         },
         {
+          // Chuyển đổi 'createdAt' từ timestamp (số) thành kiểu Date
+          $addFields: {
+            createdAt: { $toDate: '$createdAt' }, // Chuyển 'createdAt' thành Date
+            amount: { $toDouble: '$amount' } // Chuyển 'amount' từ string thành number (double)
+          }
+        },
+        {
           $group: {
-            _id: { month: { $month: '$createdAt' }, year: { $year: '$createdAt' } },
-            totalRevenue: { $sum: '$amount' }
+            _id: {
+              month: { $month: '$createdAt' }, // Trích xuất tháng từ 'createdAt'
+              year: { $year: '$createdAt' } // Trích xuất năm từ 'createdAt'
+            },
+            totalRevenue: { $sum: '$amount' } // Tính tổng doanh thu từ 'amount'
           }
         },
         {
@@ -28,12 +49,14 @@ Router.route('/revenue').get(async (req, res) => {
       ])
       .toArray()
 
+    // Chuẩn bị dữ liệu trả về
     const labels = revenueData.map((item: any) => `Month ${item._id.month}/${item._id.year}`)
     const data = revenueData.map((item: any) => item.totalRevenue)
 
     res.json({ labels, data })
-  } catch (error) {
-    res.status(500).json({ message: 'Internal Server Error' })
+  } catch (error: any) {
+    console.error('Error during aggregation:', error) // Ghi lỗi nếu có
+    res.status(500).json({ message: 'Internal Server Error', error: error.message })
   }
 })
 

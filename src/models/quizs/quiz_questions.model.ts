@@ -49,18 +49,10 @@ const createAnswerExercise = catchAsyncErrors(async (reqBody: any) => {
 
   return insertedLesson
 })
-const getDetailAnswer = catchAsyncErrors(async (id: string) => {
-  const result = await GET_DB()
-    .collection(QUIZ_QUESTION_COLLECTION_NAME)
-    .findOne({
-      _id: new ObjectId(id)
-    })
-  return result
-})
+
 export const quizQuestionModle = {
   QUIZ_QUESTION_COLLECTION_NAME,
   QUIZ_QUESTION_COLLECTION_SCHEMA,
   createAnswerExercise,
-  findOneById,
-  getDetailAnswer
+  findOneById
 }

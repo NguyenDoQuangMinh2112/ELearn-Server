@@ -30,8 +30,8 @@ const getAllChapterByCourseId = catchAsync(async (req: Request, res: Response) =
 })
 
 const getDetailAnswer = catchAsync(async (req: Request, res: Response) => {
-  const { id } = req.params
-  const answer = await chapterServices.getDetailAnswer(id)
+  const { quizId } = req.params
+  const answer = await chapterServices.getDetailAnswer(quizId)
   res.status(StatusCodes.OK).json(answer)
 })
 export const chapterController = {

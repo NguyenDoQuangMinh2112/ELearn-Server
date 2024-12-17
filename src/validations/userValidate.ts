@@ -25,6 +25,28 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
   }
 }
 
+const createTeacher = async (req: Request, res: Response, next: NextFunction) => {
+  const correctCondition = Joi.object({
+    email: Joi.string()
+      .required()
+      .email({ minDomainSegments: 2, tlds: { allow: ['com', 'net', 'vn'] } }),
+    password: Joi.string().required().min(5).trim().strict(),
+    fullName: Joi.string().required().min(5).trim().strict(),
+    role: Joi.string().valid('admin', 'user', 'teacher').default('teacher')
+  })
+
+  try {
+    await correctCondition.validateAsync(req.body, { abortEarly: false })
+    next()
+  } catch (error) {
+    if (error instanceof Error) {
+      next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, error.message))
+    } else {
+      next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, String(error)))
+    }
+  }
+}
+
 const login = async (req: Request, res: Response, next: NextFunction) => {
   const correctCondition = Joi.object({
     email: Joi.string()
@@ -57,4 +79,4 @@ const resetPassword = async (req: Request, res: Response, next: NextFunction) =>
   }
 }
 
-export const userValidation = { register, login }
+export const userValidation = { register, login, createTeacher }

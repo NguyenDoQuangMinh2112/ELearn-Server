@@ -142,6 +142,15 @@ const getListStudent = async (userId: string, page: number, limit: number) => {
   return { statusCode: StatusCodes.OK, data: students }
 }
 
+const getListTeacher = async () => {
+  const teachers = await userModel.getListTeacher()
+  return { statusCode: StatusCodes.OK, data: teachers }
+}
+
+const createTeacher = async (reqBody: any) => {
+  const newTeacher = await userModel.createTeacher(reqBody)
+  return { statusCode: StatusCodes.CREATED, data: newTeacher }
+}
 export const userServices = {
   register,
   verifyCode,
@@ -155,5 +164,7 @@ export const userServices = {
   forgotPassword,
   verifyResetToken,
   resetPassword,
-  getListStudent
+  getListStudent,
+  getListTeacher,
+  createTeacher
 }

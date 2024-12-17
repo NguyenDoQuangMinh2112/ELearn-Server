@@ -75,11 +75,28 @@ const getDetail = catchAsyncErrors(async (id: string) => {
   return result[0] || {}
 })
 
+const getDetailAnswer = catchAsyncErrors(async (quizId: string) => {
+  const quiz = await GET_DB()
+    .collection(QUIZZES_COLLECTION_NAME)
+    .findOne({
+      _id: new ObjectId(quizId)
+    })
+
+  const questions = await GET_DB()
+    .collection('quizQuestion')
+    .find({
+      _id: { $in: quiz.questions.map((questionId: any) => new ObjectId(questionId)) }
+    })
+    .toArray()
+  return questions
+})
+
 export const quizzesModle = {
   QUIZZES_COLLECTION_NAME,
   QUIZZES_COLLECTION_SCHEMA,
   createQuestionExercise,
   findOneById,
   pushQuestionIds,
-  getDetail
+  getDetail,
+  getDetailAnswer
 }

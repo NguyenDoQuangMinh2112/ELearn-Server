@@ -186,7 +186,10 @@ const updatePassword = async (email: string, newPassword: string) => {
 }
 
 const getListStudent = catchAsyncErrors(async (userId: string, page: number, limit: number) => {
-  const courses = await GET_DB()
+  const db = GET_DB()
+
+  // Tìm danh sách các khóa học của instructor
+  const courses = await db
     .collection('courses')
     .find({
       instructor_id: new ObjectId(userId),
@@ -197,8 +200,10 @@ const getListStudent = catchAsyncErrors(async (userId: string, page: number, lim
   if (courses.length === 0) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'No courses found for this instructor')
   }
+
   const courseIds = courses.map((course: any) => course._id)
-  const enrollments = await GET_DB()
+
+  const enrollments = await db
     .collection('enrolls')
     .aggregate([
       {
@@ -219,18 +224,59 @@ const getListStudent = catchAsyncErrors(async (userId: string, page: number, lim
         $unwind: '$userInfo'
       },
       {
+        $lookup: {
+          from: 'courses',
+          localField: 'courseId',
+          foreignField: '_id',
+          as: 'courseInfo'
+        }
+      },
+      {
+        $unwind: '$courseInfo'
+      },
+      {
         $project: {
           _id: 0,
           courseId: 1,
           userId: 1,
           'userInfo.fullName': 1,
           'userInfo.email': 1,
-          'userInfo.avatar_url': 1
+          'userInfo.avatar_url': 1,
+          'courseInfo.title': 1,
+          'courseInfo.description': 1
         }
       }
     ])
     .toArray()
+
   return enrollments
+})
+
+const getListTeacher = catchAsyncErrors(async () => {
+  const db = GET_DB()
+  const teacher = await db.collection(USER_COLLECTION_NAME).find({ role: 'teacher', _destroy: false }).toArray()
+  return teacher
+})
+
+const createTeacher = catchAsyncErrors(async (reqBody: any) => {
+  const { role, email } = reqBody
+
+  if (role !== 'teacher') {
+    throw new Error('Invalid role value!')
+  }
+
+  const existingTeacher = await GET_DB().collection(USER_COLLECTION_NAME).findOne({ email })
+  if (existingTeacher) {
+    throw new Error('Teacher with this email already exists!')
+  }
+
+  const validateData = await validateBeforeCreate(reqBody)
+
+  const result = await GET_DB().collection(USER_COLLECTION_NAME).insertOne(validateData)
+
+  const insertedTeacher = await GET_DB().collection(USER_COLLECTION_NAME).findOne({ _id: result.insertedId })
+
+  return insertedTeacher
 })
 
 export const userModel = {
@@ -246,5 +292,7 @@ export const userModel = {
   updateInfo,
   findOneById,
   updatePassword,
-  getListStudent
+  getListStudent,
+  getListTeacher,
+  createTeacher
 }

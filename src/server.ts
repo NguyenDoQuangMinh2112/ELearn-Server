@@ -19,9 +19,17 @@ const START_SERVER = () => {
   // Use Cookie
   app.use(cookieParser())
 
+  const allowedOrigins = ['http://localhost:5174', 'http://localhost:5175', process.env.FE_URL]
+
   app.use(
     cors({
-      origin: process.env.FE_URL,
+      origin: function (origin, callback) {
+        if (allowedOrigins.includes(origin) || !origin) {
+          callback(null, true) // Chấp nhận yêu cầu từ origin trong mảng
+        } else {
+          callback(new Error('CORS not allowed'), false) // Từ chối yêu cầu
+        }
+      },
       methods: ['GET', 'PUT', 'POST', 'DELETE', 'PATCH'],
       credentials: true
     })

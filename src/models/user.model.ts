@@ -272,6 +272,8 @@ const createTeacher = catchAsyncErrors(async (reqBody: any) => {
 
   const validateData = await validateBeforeCreate(reqBody)
 
+  validateData.password = await bcrypt.hash(validateData.password, 10)
+
   const result = await GET_DB().collection(USER_COLLECTION_NAME).insertOne(validateData)
 
   const insertedTeacher = await GET_DB().collection(USER_COLLECTION_NAME).findOne({ _id: result.insertedId })

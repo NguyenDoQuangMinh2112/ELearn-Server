@@ -15,7 +15,7 @@ const COURSE_COLLECTION_NAME = 'courses'
 
 const COURSE_COLLECTION_SCHEMA = Joi.object({
   title: Joi.string().required().min(3).max(50).trim().strict(),
-  description: Joi.string().required().min(3).max(256).trim().strict(),
+  description: Joi.string().required().min(3).max(500).trim().strict(),
   thumbnail: Joi.string().required(),
   price: Joi.number().required(),
   instructor_id: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
@@ -135,7 +135,8 @@ const getDetails = catchAsyncErrors(async (id: any) => {
 
   return result[0] || {}
 })
-const getAll = catchAsyncErrors(async () => {
+const getAll = catchAsyncErrors(async (page: number, limit: number) => {
+  const skip = (page - 1) * limit
   const result = await GET_DB()
     .collection(COURSE_COLLECTION_NAME)
     .aggregate([
@@ -165,7 +166,10 @@ const getAll = catchAsyncErrors(async () => {
           'instructor.fullName': 1,
           'instructor.avatar_url': 1
         }
-      }
+      },
+      { $sort: { views: -1 } },
+      { $skip: skip },
+      { $limit: limit }
     ])
     .toArray()
 
@@ -336,6 +340,11 @@ const stats = catchAsyncErrors(async (instructorId: string) => {
   }
 })
 
+const countBlogs = catchAsyncErrors(async () => {
+  const count = await GET_DB().collection(COURSE_COLLECTION_NAME).countDocuments()
+  return count
+})
+
 export const courseModel = {
   COURSE_COLLECTION_NAME,
   COURSE_COLLECTION_SCHEMA,
@@ -347,5 +356,6 @@ export const courseModel = {
   search,
   getAllCoursesByTeacher,
   editCourseDetail,
-  stats
+  stats,
+  countBlogs
 }

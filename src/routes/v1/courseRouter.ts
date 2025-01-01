@@ -13,7 +13,6 @@ Router.route('/:id')
 
 Router.route('/create').post(
   authMiddleware.isAuthorized,
-  authMiddleware.isAdmin,
   uploadCloud.single('thumbnail'),
   courseValidation.create,
   courseController.create

@@ -29,14 +29,24 @@ const getDetails = async (courseId: any) => {
 
   return { statusCode: StatusCodes.OK, data: cloneCourse }
 }
-const getAll = async () => {
-  const course = await courseModel.getAll()
-
+const getAll = async (page: number, limit: number) => {
+  const course = await courseModel.getAll(page, limit)
+  const totalCourses = await courseModel.countBlogs()
   if (!course) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Course not found')
   }
 
-  return { statusCode: StatusCodes.OK, message: 'Get all courses successfully', data: course }
+  return {
+    statusCode: StatusCodes.OK,
+    message: 'Get all courses successfully',
+    pagination: {
+      currentPage: page,
+      totalCourses: totalCourses,
+      totalPages: Math.ceil(totalCourses / limit),
+      pageSize: limit
+    },
+    data: course
+  }
 }
 const search = async (keyword: string) => {
   const searchData = await courseModel.search(keyword)

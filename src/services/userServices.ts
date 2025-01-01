@@ -12,7 +12,7 @@ const temporaryResetTokens: { [key: string]: string } = {}
 const register = async (reqBody: ReqBodyRegister) => {
   const existingUser = await GET_DB().collection(userModel.USER_COLLECTION_NAME).findOne({ email: reqBody.email })
   if (existingUser) {
-    throw new Error('Người dùng đã tồn tại. Vui lòng chọn một email khác !')
+    throw new Error('The user already exists. Please choose a different email!')
   }
 
   const verificationCode = crypto.randomBytes(3).toString('hex').toLocaleUpperCase()
@@ -21,7 +21,8 @@ const register = async (reqBody: ReqBodyRegister) => {
 
   return {
     statusCode: StatusCodes.CREATED,
-    message: 'Bạn đã đăng ký tài khoản thành công! Vui lòng truy cập email để lấy mã xác thực để xác thực tài khoản !'
+    message:
+      'You have successfully registered an account! Please check your email to get the verification code and verify your account!'
   }
 }
 
@@ -34,7 +35,7 @@ const verifyCode = async (code: string) => {
   await userModel.register(data)
   delete temporaryStorage[email]
 
-  return { statusCode: StatusCodes.CREATED, message: 'Đăng ký email thành công !' }
+  return { statusCode: StatusCodes.CREATED, message: 'Email registration successful!' }
 }
 const login = async (reqBody: ReqBodyLogin) => {
   const { accessToken, refreshToken, userWithoutPassword } = await userModel.login(reqBody)
@@ -124,7 +125,7 @@ const verifyResetToken = async (email: string, token: string) => {
 // Reset the password
 const resetPassword = async (email: string, newPasswordReset: string, confirmPasswordReset: string) => {
   if (newPasswordReset !== confirmPasswordReset) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'Mật khẩu xác nhận không khớp.')
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'The confirmation password does not match.')
   }
   const existingUser = await GET_DB().collection(userModel.USER_COLLECTION_NAME).findOne({ email: email })
   if (!existingUser) {
@@ -133,7 +134,7 @@ const resetPassword = async (email: string, newPasswordReset: string, confirmPas
   await userModel.updatePassword(email, newPasswordReset)
   return {
     statusCode: StatusCodes.CREATED,
-    message: 'Mật khẩu đã được reset thành công.'
+    message: 'The password has been successfully reset.'
   }
 }
 
